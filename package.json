@@ -1,0 +1,23 @@
+{
+  "name": "work-assignment-ticket-tool",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Monorepo for Work Assignment Ticket Tool",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run frontend:dev\" \"npm run backend:dev\"",
+    "frontend:dev": "cd frontend && npm run dev",
+    "backend:dev": "cd backend && venv\\Scripts\\python.exe manage.py runserver",
+    "backend:migrate": "cd backend && venv\\Scripts\\python.exe manage.py makemigrations && venv\\Scripts\\python.exe manage.py migrate",
+    "backend:seed": "cd backend && venv\\Scripts\\python.exe seed.py",
+    "backend:prod": "cd backend && venv\\Scripts\\uvicorn.exe backend_project.asgi:application --host 0.0.0.0 --port 8000",
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && venv\\Scripts\\pip.exe install -r requirements.txt",
+    "setup": "npm run install:all && npm run backend:migrate && npm run backend:seed"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "venvPath": "d:/my project personal/work assignment ticket tool/backend",
+  "venv": "venv",
+  "extraPaths": [
+    "backend",
+    "backend/venv/Lib/site-packages",
+    "d:/my project personal/work assignment ticket tool/backend/venv/Lib/site-packages"
+  ],
+  "reportMissingTypeStubs": "none",
+  "reportAttributeAccessIssue": "none",
+  "reportGeneralTypeIssues": "none"
+}

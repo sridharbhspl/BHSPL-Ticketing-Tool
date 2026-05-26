@@ -1,0 +1,240 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  Admin
+  Developer
+  Client
+}
+
+enum TicketStatus {
+  Open
+  InProgress
+  InReview
+  Resolved
+  Closed
+}
+
+enum TicketPriority {
+  Low
+  Medium
+  High
+  Urgent
+}
+
+enum TicketType {
+  Bug
+  Feature
+  Task
+  Improvement
+}
+
+enum EnvType {
+  Prod
+  UAT
+  Test
+  Dev
+}
+
+enum ImpactType {
+  Low
+  Medium
+  High
+}
+
+enum SubTaskType {
+  Analysis
+  Development
+  Testing
+  Documentation
+  Review
+}
+
+enum SubTaskStatus {
+  Open
+  InProgress
+  Done
+}
+
+enum ChannelType {
+  public
+  private
+  project
+  team
+}
+
+enum MessageType {
+  text
+  system
+  file
+}
+
+model User {
+  id            String         @id @default(uuid())
+  name          String
+  email         String         @unique
+  passwordHash  String
+  avatar        String?
+  role          Role           @default(Developer)
+  ticketsAsAssignee Ticket[]    @relation("Assignee")
+  ticketsAsReporter Ticket[]    @relation("Reporter")
+  subTasks      SubTask[]
+  comments      Comment[]
+  messages      Message[]
+  notifications Notification[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Project {
+  id          String    @id @default(uuid())
+  name        String
+  description String
+  code        String    @unique
+  icon        String?
+  color       String
+  tickets     Ticket[]
+  channels    Channel[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Ticket {
+  id              String         @id @default(uuid())
+  title           String
+  description     String
+  status          TicketStatus   @default(Open)
+  priority        TicketPriority @default(Medium)
+  type            TicketType     @default(Task)
+  category        String
+  subcategory     String
+  service         String
+  impact          ImpactType     @default(Medium)
+  usersAffected   Int            @default(1)
+  environment     EnvType        @default(Dev)
+  
+  project         Project        @relation(fields: [projectId], references: [id])
+  projectId       String
+  
+  assignee        User?          @relation("Assignee", fields: [assigneeId], references: [id])
+  assigneeId      String?
+  assignedTeam    String?
+  
+  reporter        User           @relation("Reporter", fields: [reporterId], references: [id])
+  reporterId      String
+  
+  requesterName   String
+  requesterEmail  String
+  requesterPhone  String?
+  
+  dueDate         DateTime?
+  slaDueDate      DateTime?
+  
+  tags            String[]
+  attachments     String[]
+  
+  // Technical Info
+  browser         String?
+  os              String?
+  device          String?
+  
+  subTasks        SubTask[]
+  comments        Comment[]
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model SubTask {
+  id                   String        @id @default(uuid())
+  ticket               Ticket        @relation(fields: [parentTicketId], references: [id])
+  parentTicketId       String
+  
+  title                String
+  description          String
+  type                 SubTaskType
+  
+  assignedEngineer     User          @relation(fields: [assignedEngineerId], references: [id])
+  assignedEngineerId   String
+  team                 String
+  
+  workDate             DateTime
+  hoursWorked          Float
+  workDoneToday        String
+  pendingWork          String?
+  blockers             String?
+  
+  status               SubTaskStatus @default(Open)
+  completionPercentage Int           @default(0)
+  
+  codeBranch           String?
+  buildVersion         String?
+  testingStatus        String?       // Pending | Passed | Failed
+  reviewedBy           String?
+  approvalStatus       String?       // Pending | Approved | Rejected
+  resolutionNotes      String?
+  
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  ticket    Ticket   @relation(fields: [ticketId], references: [id])
+  ticketId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Channel {
+  id          String      @id @default(uuid())
+  name        String
+  type        ChannelType
+  project     Project?    @relation(fields: [projectId], references: [id])
+  projectId   String?
+  teamName    String?
+  description String
+  messages    Message[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Message {
+  id          String      @id @default(uuid())
+  channel     Channel     @relation(fields: [channelId], references: [id])
+  channelId   String
+  sender      User        @relation(fields: [senderId], references: [id])
+  senderId    String
+  content     String
+  timestamp   DateTime    @default(now())
+  status      String      @default("sent") // sent | delivered | read
+  type        MessageType @default(text)
+  attachments String[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  actorName   String
+  actorAvatar String?
+  message     String
+  type        String   // STATUS | CREATE | WORKLOG | UPDATE
+  isRead      Boolean  @default(false)
+  timestamp   DateTime @default(now())
+  createdAt   DateTime @default(now())
+}
