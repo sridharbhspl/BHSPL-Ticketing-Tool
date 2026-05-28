@@ -45,6 +45,11 @@ const Leaves: React.FC = () => {
   const [cancelConfirmRequest, setCancelConfirmRequest] = useState<LeaveRequest | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
+  // Tab-wise pagination states
+  const [myPage, setMyPage] = useState(1);
+  const [teamPage, setTeamPage] = useState(1);
+  const [emailPage, setEmailPage] = useState(1);
+
   // New Request Form State
   const [leaveType, setLeaveType] = useState<'Full Day Leave' | 'Short Leave' | 'Sick Leave' | 'Casual Leave'>('Casual Leave');
   const [startDate, setStartDate] = useState('');
@@ -192,6 +197,125 @@ const Leaves: React.FC = () => {
       default: 
         return { bg: 'rgba(251, 191, 36, 0.1)', text: '#fbbf24', border: 'rgba(251, 191, 36, 0.2)', label: 'L1 Manager Review' };
     }
+  };
+
+  const renderPagination = (
+    currentPage: number, 
+    totalItems: number, 
+    itemsPerPage: number, 
+    onPageChange: (page: number) => void
+  ) => {
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    if (totalPages <= 1) return null;
+
+    const startIdx = (currentPage - 1) * itemsPerPage + 1;
+    const endIdx = Math.min(currentPage * itemsPerPage, totalItems);
+
+    const getPageNumbers = () => {
+      const pageNumbers = [];
+      const delta = 1;
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
+          pageNumbers.push(i);
+        } else if (pageNumbers[pageNumbers.length - 1] !== '...') {
+          pageNumbers.push('...');
+        }
+      }
+      return pageNumbers;
+    };
+
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        padding: '1.25rem 1.5rem',
+        borderTop: '1px solid var(--border)',
+        backgroundColor: 'rgba(255, 255, 255, 0.01)',
+        flexWrap: 'wrap',
+        gap: '1rem',
+        width: '100%',
+        boxSizing: 'border-box'
+      }}>
+        <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>
+          Showing <strong style={{ color: 'white' }}>{startIdx}</strong> to <strong style={{ color: 'white' }}>{endIdx}</strong> of <strong style={{ color: 'white' }}>{totalItems}</strong> entries
+        </span>
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+          <button
+            type="button"
+            disabled={currentPage === 1}
+            onClick={() => onPageChange(currentPage - 1)}
+            style={{
+              padding: '6px 12px',
+              borderRadius: '8px',
+              backgroundColor: 'rgba(255,255,255,0.02)',
+              border: '1px solid var(--border)',
+              color: currentPage === 1 ? 'var(--text-dim)' : 'white',
+              fontSize: '0.75rem',
+              cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s',
+              opacity: currentPage === 1 ? 0.5 : 1
+            }}
+          >
+            Previous
+          </button>
+          
+          {getPageNumbers().map((page, idx) => {
+            if (page === '...') {
+              return (
+                <span key={idx} style={{ color: 'var(--text-dim)', padding: '0 4px', fontSize: '0.8rem' }}>
+                  ...
+                </span>
+              );
+            }
+            const isActive = page === currentPage;
+            return (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => onPageChange(page as number)}
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '8px',
+                  backgroundColor: isActive ? 'var(--primary)' : 'rgba(255,255,255,0.02)',
+                  border: isActive ? '1px solid var(--primary)' : '1px solid var(--border)',
+                  color: isActive ? '#000' : 'white',
+                  fontSize: '0.75rem',
+                  fontWeight: isActive ? 800 : 500,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {page}
+              </button>
+            );
+          })}
+
+          <button
+            type="button"
+            disabled={currentPage === totalPages}
+            onClick={() => onPageChange(currentPage + 1)}
+            style={{
+              padding: '6px 12px',
+              borderRadius: '8px',
+              backgroundColor: 'rgba(255,255,255,0.02)',
+              border: '1px solid var(--border)',
+              color: currentPage === totalPages ? 'var(--text-dim)' : 'white',
+              fontSize: '0.75rem',
+              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s',
+              opacity: currentPage === totalPages ? 0.5 : 1
+            }}
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -371,8 +495,9 @@ const Leaves: React.FC = () => {
 
           {/* Tab 1 & Tab 2: Leaves tables */}
           {activeTab !== 'emails' ? (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--text-dim)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
                     <th style={{ padding: '1.25rem 1.5rem', fontWeight: 600 }}>Resource</th>
@@ -385,219 +510,231 @@ const Leaves: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {(activeTab === 'my' ? myLeaves : teamLeaves).length > 0 ? (
-                    (activeTab === 'my' ? myLeaves : teamLeaves).map((req) => {
-                      const style = getStatusStyle(req.status);
-                      
-                      // Check reviewer capability
-                      const canApproveL1 = req.status === 'Pending L1 Approval' && (isPM || isAdmin);
-                      const canApproveL2 = req.status === 'Pending L2 (HR) Approval' && isAdmin;
+                  {(() => {
+                    const currentList = activeTab === 'my' ? myLeaves : teamLeaves;
+                    const currentPage = activeTab === 'my' ? myPage : teamPage;
+                    const paginatedList = currentList.slice((currentPage - 1) * 10, currentPage * 10);
+                    
+                    if (currentList.length > 0) {
+                      return paginatedList.map((req) => {
+                        const style = getStatusStyle(req.status);
+                        
+                        // Check reviewer capability
+                        const canApproveL1 = req.status === 'Pending L1 Approval' && (isPM || isAdmin);
+                        const canApproveL2 = req.status === 'Pending L2 (HR) Approval' && isAdmin;
 
-                      return (
-                        <tr 
-                          key={req.id}
-                          style={{ borderBottom: '1px solid var(--border)', backgroundColor: 'rgba(255, 255, 255, 0.005)' }}
-                        >
-                          <td style={{ padding: '1.25rem 1.5rem' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                              <img src={req.avatar} style={{ width: '32px', height: '32px', borderRadius: '8px', border: '1px solid var(--border)' }} alt="" />
-                              <div>
-                                <span style={{ fontWeight: 700, color: 'white', fontSize: '0.875rem', display: 'block' }}>{req.userName}</span>
-                                <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>ID: {req.id}</span>
+                        return (
+                          <tr 
+                            key={req.id}
+                            style={{ borderBottom: '1px solid var(--border)', backgroundColor: 'rgba(255, 255, 255, 0.005)' }}
+                          >
+                            <td style={{ padding: '1.25rem 1.5rem' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <img src={req.avatar} style={{ width: '32px', height: '32px', borderRadius: '8px', border: '1px solid var(--border)' }} alt="" />
+                                <div>
+                                  <span style={{ fontWeight: 700, color: 'white', fontSize: '0.875rem', display: 'block' }}>{req.userName}</span>
+                                  <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>ID: {req.id}</span>
+                                </div>
                               </div>
-                            </div>
-                          </td>
-                          <td style={{ padding: '1.25rem 1.5rem' }}>
-                            <span style={{
-                              padding: '2px 8px',
-                              borderRadius: '4px',
-                              fontSize: '0.75rem',
-                              fontWeight: 600,
-                              backgroundColor: req.leaveType === 'Short Leave' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(255, 255, 255, 0.03)',
-                              color: req.leaveType === 'Short Leave' ? '#60a5fa' : 'white',
-                              border: req.leaveType === 'Short Leave' ? '1px solid rgba(59, 130, 246, 0.2)' : '1px solid rgba(255, 255, 255, 0.05)'
-                            }}>
-                              {req.leaveType}
-                            </span>
-                          </td>
-                          <td style={{ padding: '1.25rem 1.5rem', fontSize: '0.85rem', fontWeight: 800, color: 'white' }}>
-                            {req.duration}
-                          </td>
-                          <td style={{ padding: '1.25rem 1.5rem', fontSize: '0.85rem', color: 'var(--text-dim)' }}>
-                            {req.startDate === req.endDate ? req.startDate : `${req.startDate} to ${req.endDate}`}
-                          </td>
-                          <td style={{ padding: '1.25rem 1.5rem' }}>
-                            <span style={{
-                              padding: '4px 10px',
-                              borderRadius: '20px',
-                              fontSize: '0.75rem',
-                              fontWeight: 800,
-                              backgroundColor: style.bg,
-                              color: style.text,
-                              border: `1px solid ${style.border}`,
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '6px'
-                            }}>
-                              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: style.text }} />
-                              {style.label}
-                            </span>
-                          </td>
-                          <td style={{ padding: '1.25rem 1.5rem' }}>
-                            <button
-                              onClick={() => setSelectedReqForTimeline(req)}
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                background: 'transparent',
-                                border: '1px solid var(--border)',
-                                color: 'var(--text-dim)',
-                                padding: '4px 10px',
-                                borderRadius: '6px',
+                            </td>
+                            <td style={{ padding: '1.25rem 1.5rem' }}>
+                              <span style={{
+                                padding: '2px 8px',
+                                borderRadius: '4px',
                                 fontSize: '0.75rem',
                                 fontWeight: 600,
-                                cursor: 'pointer'
-                              }}
-                              className="hover-glass"
-                            >
-                              <Eye size={12} /> Audit Trail ({req.workflowLogs.length})
-                            </button>
-                          </td>
-                          <td style={{ padding: '1.25rem 1.5rem' }}>
-                            {activeTab === 'my' && (req.status === 'Pending L1 Approval' || req.status === 'Pending L2 (HR) Approval') && (
-                              <div style={{ display: 'flex', gap: '8px' }}>
-                                <button 
-                                  onClick={() => handleStartEdit(req)}
-                                  style={{
-                                    padding: '5px 12px',
-                                    fontSize: '0.75rem',
-                                    borderRadius: '6px',
-                                    background: 'rgba(245, 158, 11, 0.1)',
-                                    border: '1px solid rgba(245, 158, 11, 0.2)',
-                                    color: 'var(--primary)',
-                                    cursor: 'pointer',
-                                    fontWeight: 700
-                                  }}
-                                  className="hover-glass"
-                                >
-                                  Edit
-                                </button>
-                                <button 
-                                  onClick={() => handleStartCancel(req)}
-                                  style={{
-                                    padding: '5px 12px',
-                                    fontSize: '0.75rem',
-                                    borderRadius: '6px',
-                                    background: 'rgba(239, 68, 68, 0.05)',
-                                    border: '1px solid rgba(239, 68, 68, 0.1)',
-                                    color: '#ef4444',
-                                    cursor: 'pointer',
-                                    fontWeight: 700
-                                  }}
-                                  className="hover-glass"
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            )}
-
-                            {activeTab !== 'my' && canApproveL1 && (
-                              <div style={{ display: 'flex', gap: '8px' }}>
-                                <button 
-                                  onClick={() => approveL1(req.id, user?.name || 'Bavya Manager')}
-                                  style={{
-                                    padding: '5px 12px',
-                                    fontSize: '0.75rem',
-                                    borderRadius: '6px',
-                                    background: 'rgba(16, 185, 129, 0.1)',
-                                    border: '1px solid rgba(16, 185, 129, 0.2)',
-                                    color: '#10b981',
-                                    cursor: 'pointer',
-                                    fontWeight: 700
-                                  }}
-                                >
-                                  L1 Approve
-                                </button>
-                                <button 
-                                  onClick={() => rejectLeave(req.id, user?.name || 'Bavya Reviewer', 'Project Manager')}
-                                  style={{
-                                    padding: '5px 12px',
-                                    fontSize: '0.75rem',
-                                    borderRadius: '6px',
-                                    background: 'rgba(239, 68, 68, 0.05)',
-                                    border: '1px solid rgba(239, 68, 68, 0.1)',
-                                    color: '#ef4444',
-                                    cursor: 'pointer',
-                                    fontWeight: 700
-                                  }}
-                                >
-                                  Reject
-                                </button>
-                              </div>
-                            )}
-
-                            {activeTab !== 'my' && canApproveL2 && (
-                              <div style={{ display: 'flex', gap: '8px' }}>
-                                <button 
-                                  onClick={() => approveL2(req.id, user?.name || 'HR Specialist')}
-                                  style={{
-                                    padding: '5px 12px',
-                                    fontSize: '0.75rem',
-                                    borderRadius: '6px',
-                                    background: 'var(--grad-primary)',
-                                    color: 'black',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    fontWeight: 800
-                                  }}
-                                >
-                                  HR L2 Sign-off
-                                </button>
-                                <button 
-                                  onClick={() => rejectLeave(req.id, user?.name || 'Bavya Reviewer', 'HR Manager')}
-                                  style={{
-                                    padding: '5px 12px',
-                                    fontSize: '0.75rem',
-                                    borderRadius: '6px',
-                                    background: 'rgba(239, 68, 68, 0.05)',
-                                    border: '1px solid rgba(239, 68, 68, 0.1)',
-                                    color: '#ef4444',
-                                    cursor: 'pointer',
-                                    fontWeight: 700
-                                  }}
-                                >
-                                  Reject
-                                </button>
-                              </div>
-                            )}
-
-                            {((activeTab === 'my' && req.status !== 'Pending L1 Approval' && req.status !== 'Pending L2 (HR) Approval') || 
-                              (activeTab !== 'my' && !canApproveL1 && !canApproveL2)) && (
-                              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-                                {req.status === 'Approved' ? '✅ Full Sign-off Completed' : 
-                                 req.status === 'Rejected' ? '❌ Request Terminated' : 
-                                 req.status === 'Cancelled' ? '↩️ Request Cancelled' : '🔒 Pending Vetting Stage'}
+                                backgroundColor: req.leaveType === 'Short Leave' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(255, 255, 255, 0.03)',
+                                color: req.leaveType === 'Short Leave' ? '#60a5fa' : 'white',
+                                border: req.leaveType === 'Short Leave' ? '1px solid rgba(59, 130, 246, 0.2)' : '1px solid rgba(255, 255, 255, 0.05)'
+                              }}>
+                                {req.leaveType}
                               </span>
-                            )}
+                            </td>
+                            <td style={{ padding: '1.25rem 1.5rem', fontSize: '0.85rem', fontWeight: 800, color: 'white' }}>
+                              {req.duration}
+                            </td>
+                            <td style={{ padding: '1.25rem 1.5rem', fontSize: '0.85rem', color: 'var(--text-dim)' }}>
+                              {req.startDate === req.endDate ? req.startDate : `${req.startDate} to ${req.endDate}`}
+                            </td>
+                            <td style={{ padding: '1.25rem 1.5rem' }}>
+                              <span style={{
+                                padding: '4px 10px',
+                                borderRadius: '20px',
+                                fontSize: '0.75rem',
+                                fontWeight: 800,
+                                backgroundColor: style.bg,
+                                color: style.text,
+                                border: `1px solid ${style.border}`,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px'
+                              }}>
+                                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: style.text }} />
+                                {style.label}
+                              </span>
+                            </td>
+                            <td style={{ padding: '1.25rem 1.5rem' }}>
+                              <button
+                                onClick={() => setSelectedReqForTimeline(req)}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  background: 'transparent',
+                                  border: '1px solid var(--border)',
+                                  color: 'var(--text-dim)',
+                                  padding: '4px 10px',
+                                  borderRadius: '6px',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 600,
+                                  cursor: 'pointer'
+                                }}
+                                className="hover-glass"
+                              >
+                                <Eye size={12} /> Audit Trail ({req.workflowLogs.length})
+                              </button>
+                            </td>
+                            <td style={{ padding: '1.25rem 1.5rem' }}>
+                              {activeTab === 'my' && (req.status === 'Pending L1 Approval' || req.status === 'Pending L2 (HR) Approval') && (
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                  <button 
+                                    onClick={() => handleStartEdit(req)}
+                                    style={{
+                                      padding: '5px 12px',
+                                      fontSize: '0.75rem',
+                                      borderRadius: '6px',
+                                      background: 'rgba(245, 158, 11, 0.1)',
+                                      border: '1px solid rgba(245, 158, 11, 0.2)',
+                                      color: 'var(--primary)',
+                                      cursor: 'pointer',
+                                      fontWeight: 700
+                                    }}
+                                    className="hover-glass"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button 
+                                    onClick={() => handleStartCancel(req)}
+                                    style={{
+                                      padding: '5px 12px',
+                                      fontSize: '0.75rem',
+                                      borderRadius: '6px',
+                                      background: 'rgba(239, 68, 68, 0.05)',
+                                      border: '1px solid rgba(239, 68, 68, 0.1)',
+                                      color: '#ef4444',
+                                      cursor: 'pointer',
+                                      fontWeight: 700
+                                    }}
+                                    className="hover-glass"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              )}
+
+                              {activeTab !== 'my' && canApproveL1 && (
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                  <button 
+                                    onClick={() => approveL1(req.id, user?.name || 'Bavya Manager')}
+                                    style={{
+                                      padding: '5px 12px',
+                                      fontSize: '0.75rem',
+                                      borderRadius: '6px',
+                                      background: 'rgba(16, 185, 129, 0.1)',
+                                      border: '1px solid rgba(16, 185, 129, 0.2)',
+                                      color: '#10b981',
+                                      cursor: 'pointer',
+                                      fontWeight: 700
+                                    }}
+                                  >
+                                    L1 Approve
+                                  </button>
+                                  <button 
+                                    onClick={() => rejectLeave(req.id, user?.name || 'Bavya Reviewer', 'Project Manager')}
+                                    style={{
+                                      padding: '5px 12px',
+                                      fontSize: '0.75rem',
+                                      borderRadius: '6px',
+                                      background: 'rgba(239, 68, 68, 0.05)',
+                                      border: '1px solid rgba(239, 68, 68, 0.1)',
+                                      color: '#ef4444',
+                                      cursor: 'pointer',
+                                      fontWeight: 700
+                                    }}
+                                  >
+                                    Reject
+                                  </button>
+                                </div>
+                              )}
+
+                              {activeTab !== 'my' && canApproveL2 && (
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                  <button 
+                                    onClick={() => approveL2(req.id, user?.name || 'HR Specialist')}
+                                    style={{
+                                      padding: '5px 12px',
+                                      fontSize: '0.75rem',
+                                      borderRadius: '6px',
+                                      background: 'var(--grad-primary)',
+                                      color: 'black',
+                                      border: 'none',
+                                      cursor: 'pointer',
+                                      fontWeight: 800
+                                    }}
+                                  >
+                                    HR L2 Sign-off
+                                  </button>
+                                  <button 
+                                    onClick={() => rejectLeave(req.id, user?.name || 'Bavya Reviewer', 'HR Manager')}
+                                    style={{
+                                      padding: '5px 12px',
+                                      fontSize: '0.75rem',
+                                      borderRadius: '6px',
+                                      background: 'rgba(239, 68, 68, 0.05)',
+                                      border: '1px solid rgba(239, 68, 68, 0.1)',
+                                      color: '#ef4444',
+                                      cursor: 'pointer',
+                                      fontWeight: 700
+                                    }}
+                                  >
+                                    Reject
+                                  </button>
+                                </div>
+                              )}
+
+                              {((activeTab === 'my' && req.status !== 'Pending L1 Approval' && req.status !== 'Pending L2 (HR) Approval') || 
+                                (activeTab !== 'my' && !canApproveL1 && !canApproveL2)) && (
+                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+                                  {req.status === 'Approved' ? '✅ Full Sign-off Completed' : 
+                                   req.status === 'Rejected' ? '❌ Request Terminated' : 
+                                   req.status === 'Cancelled' ? '↩️ Request Cancelled' : '🔒 Pending Vetting Stage'}
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      });
+                    } else {
+                      return (
+                        <tr>
+                          <td colSpan={7} style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-dim)' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                              <Inbox size={48} style={{ opacity: 0.15 }} />
+                              <span>No leave requests logged in this category.</span>
+                            </div>
                           </td>
                         </tr>
                       );
-                    })
-                  ) : (
-                    <tr>
-                      <td colSpan={7} style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-dim)' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-                          <Inbox size={48} style={{ opacity: 0.15 }} />
-                          <span>No leave requests logged in this category.</span>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
+                    }
+                  })()}
                 </tbody>
               </table>
             </div>
-          ) : (
+            {activeTab === 'my' 
+              ? renderPagination(myPage, myLeaves.length, 10, setMyPage) 
+              : renderPagination(teamPage, teamLeaves.length, 10, setTeamPage)}
+          </>
+        ) : (
             
             /* Tab 3: Interactive Corporate Automated Email Terminal */
             <div style={{ padding: '1.5rem', backgroundColor: 'rgba(0,0,0,0.15)' }}>
@@ -610,8 +747,9 @@ const Leaves: React.FC = () => {
               </div>
 
               {emailLogs.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {emailLogs.map((log) => (
+                <>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
+                    {emailLogs.slice((emailPage - 1) * 10, emailPage * 10).map((log) => (
                     <motion.div 
                       key={log.id}
                       initial={{ opacity: 0, x: -10 }}
@@ -651,7 +789,9 @@ const Leaves: React.FC = () => {
                     </motion.div>
                   ))}
                 </div>
-              ) : (
+                {renderPagination(emailPage, emailLogs.length, 10, setEmailPage)}
+              </>
+            ) : (
                 <div style={{ padding: '3rem 1rem', textAlign: 'center', color: 'var(--text-dim)' }}>
                   <Mail size={36} style={{ opacity: 0.15, marginBottom: '8px' }} />
                   <p style={{ fontSize: '0.8rem' }}>Outbox is currently idle. Submit or approve requests to trigger SMTP activities.</p>

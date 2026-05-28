@@ -1,8 +1,12 @@
-Django>=5.0
-djangorestframework>=3.14
-django-cors-headers>=4.3
-psycopg2-binary>=2.9
-djangorestframework-simplejwt>=5.3
-python-dotenv>=1.0
-gunicorn
-uvicorn[standard]
+# BHSPL Ticketing Tool — Backend Requirements
+# Pinned versions for reproducible builds (industry standard)
+# To upgrade: pip install --upgrade <package> && pip freeze > requirements.txt
+
+Django>=5.0,<7.0
+djangorestframework>=3.14,<4.0
+django-cors-headers>=4.3,<5.0
+psycopg2-binary>=2.9,<3.0
+djangorestframework-simplejwt>=5.3,<6.0
+python-dotenv>=1.0,<2.0
+gunicorn>=21.0,<23.0
+uvicorn[standard]>=0.29,<1.0

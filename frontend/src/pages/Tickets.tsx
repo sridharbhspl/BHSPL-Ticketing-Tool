@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -42,6 +42,12 @@ const Tickets: React.FC = () => {
 
   const selectedProjectId = searchParams.get('projectId') || 'all';
 
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedProjectId]);
+
   const filteredTickets = tickets.filter(t => {
     if (selectedProjectId !== 'all' && t.projectId !== selectedProjectId) {
       return false;
@@ -80,6 +86,125 @@ const Tickets: React.FC = () => {
       case 'Open': return { bg: 'rgba(251, 191, 36, 0.1)', text: '#fbbf24' };
       default: return { bg: 'rgba(255, 255, 255, 0.05)', text: 'var(--text-dim)' };
     }
+  };
+
+  const renderPagination = (
+    currentPage: number, 
+    totalItems: number, 
+    itemsPerPage: number, 
+    onPageChange: (page: number) => void
+  ) => {
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    if (totalPages <= 1) return null;
+
+    const startIdx = (currentPage - 1) * itemsPerPage + 1;
+    const endIdx = Math.min(currentPage * itemsPerPage, totalItems);
+
+    const getPageNumbers = () => {
+      const pageNumbers = [];
+      const delta = 1;
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
+          pageNumbers.push(i);
+        } else if (pageNumbers[pageNumbers.length - 1] !== '...') {
+          pageNumbers.push('...');
+        }
+      }
+      return pageNumbers;
+    };
+
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        padding: '1.25rem 1.5rem',
+        borderTop: '1px solid var(--border)',
+        backgroundColor: 'rgba(255, 255, 255, 0.01)',
+        flexWrap: 'wrap',
+        gap: '1rem',
+        width: '100%',
+        boxSizing: 'border-box'
+      }}>
+        <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>
+          Showing <strong style={{ color: 'white' }}>{startIdx}</strong> to <strong style={{ color: 'white' }}>{endIdx}</strong> of <strong style={{ color: 'white' }}>{totalItems}</strong> entries
+        </span>
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+          <button
+            type="button"
+            disabled={currentPage === 1}
+            onClick={() => onPageChange(currentPage - 1)}
+            style={{
+              padding: '6px 12px',
+              borderRadius: '8px',
+              backgroundColor: 'rgba(255,255,255,0.02)',
+              border: '1px solid var(--border)',
+              color: currentPage === 1 ? 'var(--text-dim)' : 'white',
+              fontSize: '0.75rem',
+              cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s',
+              opacity: currentPage === 1 ? 0.5 : 1
+            }}
+          >
+            Previous
+          </button>
+          
+          {getPageNumbers().map((page, idx) => {
+            if (page === '...') {
+              return (
+                <span key={idx} style={{ color: 'var(--text-dim)', padding: '0 4px', fontSize: '0.8rem' }}>
+                  ...
+                </span>
+              );
+            }
+            const isActive = page === currentPage;
+            return (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => onPageChange(page as number)}
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '8px',
+                  backgroundColor: isActive ? 'var(--primary)' : 'rgba(255,255,255,0.02)',
+                  border: isActive ? '1px solid var(--primary)' : '1px solid var(--border)',
+                  color: isActive ? '#000' : 'white',
+                  fontSize: '0.75rem',
+                  fontWeight: isActive ? 800 : 500,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {page}
+              </button>
+            );
+          })}
+
+          <button
+            type="button"
+            disabled={currentPage === totalPages}
+            onClick={() => onPageChange(currentPage + 1)}
+            style={{
+              padding: '6px 12px',
+              borderRadius: '8px',
+              backgroundColor: 'rgba(255,255,255,0.02)',
+              border: '1px solid var(--border)',
+              color: currentPage === totalPages ? 'var(--text-dim)' : 'white',
+              fontSize: '0.75rem',
+              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s',
+              opacity: currentPage === totalPages ? 0.5 : 1
+            }}
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -204,7 +329,7 @@ const Tickets: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredTickets.map((ticket) => {
+              {filteredTickets.slice((currentPage - 1) * 10, currentPage * 10).map((ticket) => {
                 const statusStyle = getStatusStyle(ticket.status);
                 const assignee = users.find(u => u.id === ticket.assigneeId);
                 const project = projects.find(p => p.id === ticket.projectId);
@@ -351,6 +476,7 @@ const Tickets: React.FC = () => {
             </tbody>
           </table>
         </div>
+        {renderPagination(currentPage, filteredTickets.length, 10, setCurrentPage)}
       </div>
 
       <ConfirmationModal

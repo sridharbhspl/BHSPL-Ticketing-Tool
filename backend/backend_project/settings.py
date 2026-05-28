@@ -200,6 +200,10 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# ── CORS ─────────────────────────────────────────────────────────────────────
+# Allow all origins in development. For production, override via .env:
+#   CORS_ALLOW_ALL_ORIGINS=False
+#   CORS_ALLOWED_ORIGINS=https://yourdomain.com
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
@@ -227,11 +231,17 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    # NOTE: BLACKLIST_AFTER_ROTATION requires 'rest_framework_simplejwt.token_blacklist'
+    # in INSTALLED_APPS + its own migration. Not installed here — keep both False.
     'ROTATE_REFRESH_TOKENS': False,
-    'BLACKLIST_AFTER_ROTATION': True,
+    'BLACKLIST_AFTER_ROTATION': False,
+    'UPDATE_LAST_LOGIN': True,
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
     'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
 }
 
 # Email Settings (Gold Standard Console & SMTP dynamic routing)

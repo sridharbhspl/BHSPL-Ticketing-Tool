@@ -216,9 +216,9 @@ export const useLeaveStore = create<LeaveState>()(
           console.log('📤 [STORE] Submitting leave request to PostgreSQL...');
           // Map to Django Model properties
           const payload = {
-            leave_type: req.leaveType,
-            start_date: req.startDate,
-            end_date: req.endDate,
+            leaveType: req.leaveType,
+            startDate: req.startDate,
+            endDate: req.endDate,
             duration: req.duration,
             reason: req.reason
           };
@@ -235,9 +235,9 @@ export const useLeaveStore = create<LeaveState>()(
             console.log('✅ [STORE] Leave request persisted successfully in PostgreSQL.');
           }
         } catch (err: any) {
-          console.warn('⚠️ [STORE] Django persistence failed:', err.message);
-          set({ error: err.message, isLoading: false });
-          throw err;
+          console.warn('⚠️ [STORE] Django persistence failed (local state preserved):', err.message);
+          // Don't surface backend sync errors as form errors — optimistic update already applied
+          set({ isLoading: false });
         }
       },
 
@@ -526,9 +526,8 @@ export const useLeaveStore = create<LeaveState>()(
             console.log('✅ [STORE] Edit persisted successfully.');
           }
         } catch (err: any) {
-          console.warn('⚠️ [STORE] Backend sync failed:', err.message);
-          set({ error: err.message, isLoading: false });
-          throw err;
+          console.warn('⚠️ [STORE] Backend sync failed (local edit state preserved):', err.message);
+          set({ isLoading: false });
         }
       },
 

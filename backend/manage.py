@@ -8,7 +8,7 @@ import subprocess
 def bootstrap_venv():
     """Auto-bootstrap the virtual environment if run from a global Python."""
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    
+
     # Locate the virtual environment executable
     if os.name == 'nt':
         venv_python = os.path.join(current_dir, 'venv', 'Scripts', 'python.exe')
@@ -32,6 +32,7 @@ def bootstrap_venv():
 # Auto-bootstrap before doing anything else
 bootstrap_venv()
 
+
 class LoggerTee:
     def __init__(self, filename, original_stream):
         self.file = open(filename, 'a', encoding='utf-8')
@@ -47,6 +48,7 @@ class LoggerTee:
         self.file.flush()
         self.original_stream.flush()
 
+
 # Create startup_debug.log and Tee output
 current_dir = os.path.dirname(os.path.abspath(__file__))
 log_path = os.path.join(current_dir, 'startup_debug.log')
@@ -55,6 +57,7 @@ with open(log_path, 'w', encoding='utf-8') as f:
 
 sys.stdout = LoggerTee(log_path, sys.stdout)
 sys.stderr = LoggerTee(log_path, sys.stderr)
+
 
 def main():
     """Run administrative tasks."""
@@ -68,40 +71,48 @@ def main():
             "forget to activate a virtual environment?"
         ) from exc
 
-    # Programmatic migrations to keep DB sync transparent and self-healing
+    # ── Auto-Migration on runserver ───────────────────────────────────────────
+    # KEY FIX: execute_from_command_line() calls django.setup() internally.
+    # Calling django.setup() manually BEFORE it triggers:
+    #   "RuntimeError: populate() isn't reentrant"
+    # which crashes the server thread and blocks ALL login / API requests.
+    #
+    # SOLUTION: Run `migrate` as a subprocess in the PARENT process only
+    # (RUN_MAIN != 'true'), before the auto-reloader forks the child.
+    # The child process (RUN_MAIN == 'true') is left alone — execute_from_command_line
+    # handles its own single clean django.setup() call.
     if len(sys.argv) > 1 and sys.argv[1] == 'runserver':
-        if os.environ.get('RUN_MAIN') == 'true':
-            try:
-                import django
-                django.setup()
-                from django.core.management import call_command
-                print("🔄 [Auto-Migration] Checking and applying database updates...")
-                call_command('makemigrations', 'users', 'projects', 'tickets', 'chat', 'notifications')
-                call_command('migrate')
+        try:
+            print("🔄 [Auto-Migration] Auto-generating migrations...")
+            subprocess.call(
+                [sys.executable, __file__, 'makemigrations', 'tickets', '--no-input'],
+                timeout=60,
+            )
+            print("🔄 [Auto-Migration] Applying pending migrations...")
+            ret = subprocess.call(
+                [sys.executable, __file__, 'migrate', '--no-input'],
+                timeout=60,
+            )
+            if ret == 0:
                 print("✅ [Auto-Migration] Database is fully up-to-date!")
-                
-                # Auto-setup target user in PostgreSQL DB
                 try:
-                    from users.models import User
-                    target_email = "sri_moparthi@yahoo.com"
-                    if not User.objects.filter(email=target_email).exists():
-                        User.objects.create_user(
-                            email=target_email,
-                            password="Test@123",
-                            name="Sri Moparthi",
-                            role="Developer"
-                        )
-                        print(f"🎯 [Auto-User] Automatically registered '{target_email}' with password 'Test@123'!")
-                    else:
-                        u = User.objects.get(email=target_email)
-                        u.set_password("Test@123")
-                        u.save()
-                        print(f"🎯 [Auto-User] Verified '{target_email}' exists and password is set to 'Test@123'!")
-                except Exception as user_e:
-                    print(f"⚠️ [Auto-User] Failed to setup user: {user_e}", file=sys.stderr)
-            except Exception as e:
-                print(f"⚠️ [Auto-Migration] Migration check failed: {e}", file=sys.stderr)
+                    print("🌱 [Auto-Seed] Populating initial lookup data...")
+                    subprocess.call(
+                        [sys.executable, 'seed.py'],
+                        timeout=30,
+                    )
+                    print("✅ [Auto-Seed] Lookup database successfully populated!")
+                except Exception as seed_exc:
+                    print(f"⚠️ [Auto-Seed] Seeding failed: {seed_exc}", file=sys.stderr)
+            else:
+                print(
+                    f"⚠️ [Auto-Migration] migrate exited with code {ret}.",
+                    file=sys.stderr,
+                )
+        except Exception as mig_exc:
+            print(f"⚠️ [Auto-Migration] Subprocess failed: {mig_exc}", file=sys.stderr)
 
+    # ── Start Django (single django.setup() happens inside here) ─────────────
     execute_from_command_line(sys.argv)
 
 

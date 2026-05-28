@@ -6,13 +6,8 @@ import {
   Clock, 
   AlertCircle, 
   CheckCircle2, 
-  User, 
-  ArrowUpRight,
   ClipboardList,
-  Inbox,
-  Filter,
-  CheckCircle,
-  Users
+  Inbox
 } from 'lucide-react';
 import { useTicketStore } from '../store/useTicketStore';
 import { useAuthStore } from '../store/useAuthStore';
@@ -75,6 +70,7 @@ const MyTickets: React.FC = () => {
     switch (status) {
       case 'Resolved': return { bg: 'rgba(16, 185, 129, 0.1)', text: '#10b981' };
       case 'In Progress': return { bg: 'rgba(234, 88, 12, 0.1)', text: '#ea580c' };
+      case 'Blocked': return { bg: 'rgba(239, 68, 68, 0.1)', text: '#ef4444' };
       case 'In Review': return { bg: 'rgba(245, 158, 11, 0.1)', text: '#f59e0b' };
       case 'Open': return { bg: 'rgba(251, 191, 36, 0.1)', text: '#fbbf24' };
       default: return { bg: 'rgba(255, 255, 255, 0.05)', text: 'var(--text-dim)' };
@@ -243,6 +239,7 @@ const MyTickets: React.FC = () => {
                 <option value="all" style={{ backgroundColor: '#0f0f12', color: 'var(--text-dim)' }}>All Statuses</option>
                 <option value="Open" style={{ backgroundColor: '#0f0f12', color: 'white' }}>Open</option>
                 <option value="In Progress" style={{ backgroundColor: '#0f0f12', color: 'white' }}>In Progress</option>
+                <option value="Blocked" style={{ backgroundColor: '#0f0f12', color: 'white' }}>Blocked</option>
                 <option value="In Review" style={{ backgroundColor: '#0f0f12', color: 'white' }}>In Review</option>
                 <option value="Resolved" style={{ backgroundColor: '#0f0f12', color: 'white' }}>Resolved</option>
                 <option value="Closed" style={{ backgroundColor: '#0f0f12', color: 'white' }}>Closed</option>

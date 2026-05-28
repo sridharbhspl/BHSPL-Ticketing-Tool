@@ -1,4 +1,4 @@
-import { apiRequest } from './apiClient';
+import { apiRequest, BASE_URL } from './apiClient';
 import { API_DEBUG } from './apiDebug';
 import type { User } from '../types';
 
@@ -52,11 +52,10 @@ export const authApi = {
     try {
       console.log('🔄 [AUTH] Attempting token refresh...');
       
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/'}auth/refresh/`, {
+      // ✅ FIX: Use BASE_URL from apiClient — no inline URL duplication
+      const response = await fetch(`${BASE_URL}auth/refresh/`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refresh: refreshToken }),
       });
 
@@ -108,9 +107,7 @@ export const authApi = {
   getMe: async () => {
     try {
       console.log('👤 [AUTH] Fetching current user...');
-      
       const user = await apiRequest<User>('auth/me/');
-      
       console.log('✅ [AUTH] User fetched:', user?.name || user?.email);
       return user;
     } catch (error: any) {
@@ -122,12 +119,10 @@ export const authApi = {
   updateProfile: async (userData: Partial<User>) => {
     try {
       console.log('✏️ [AUTH] Updating user profile...');
-      
       const result = await apiRequest<User>('auth/me/', {
         method: 'PATCH',
         body: JSON.stringify(userData),
       });
-
       console.log('✅ [AUTH] Profile updated successfully');
       return result;
     } catch (error: any) {

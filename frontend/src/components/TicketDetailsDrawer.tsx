@@ -113,7 +113,7 @@ const TicketDetailsDrawer: React.FC = () => {
     }
   };
 
-  const statusOptions: TicketStatus[] = ['Open', 'In Progress', 'In Review', 'Resolved', 'Closed'];
+  const statusOptions: TicketStatus[] = ['Open', 'In Progress', 'Blocked', 'In Review', 'Resolved', 'Closed'];
   const priorityOptions: TicketPriority[] = ['Low', 'Medium', 'High', 'Urgent'];
 
   return (

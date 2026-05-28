@@ -1,13 +1,35 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Ticket, SubTask, Comment, Attachment, AuditLog, LeaveRequest, AttendanceSession
+from .models import Ticket, SubTask, Comment, Attachment, AuditLog, LeaveRequest, AttendanceSession, TicketType, Category, Subcategory, Environment
 from .serializers import (
     TicketSerializer, SubTaskSerializer, CommentSerializer, AttachmentSerializer, AuditLogSerializer,
-    LeaveRequestSerializer, AttendanceSessionSerializer
+    LeaveRequestSerializer, AttendanceSessionSerializer, TicketTypeSerializer, CategorySerializer, SubcategorySerializer,
+    EnvironmentSerializer
 )
 from projects.models import Project
 from notifications.utils import send_ticket_notification
+
+class TicketTypeViewSet(viewsets.ModelViewSet):
+    queryset = TicketType.objects.all()
+    serializer_class = TicketTypeSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class SubcategoryViewSet(viewsets.ModelViewSet):
+    queryset = Subcategory.objects.all()
+    serializer_class = SubcategorySerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class EnvironmentViewSet(viewsets.ModelViewSet):
+    queryset = Environment.objects.all()
+    serializer_class = EnvironmentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
 
 class TicketViewSet(viewsets.ModelViewSet):
     queryset = Ticket.objects.select_related('project', 'assignee', 'reporter').prefetch_related('comments', 'subtasks', 'ticket_attachments', 'audit_logs').all()

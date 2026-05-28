@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
@@ -21,7 +22,9 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
     };
   }, [isOpen]);
 
-  return (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <>
@@ -51,7 +54,8 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 1001,
-            pointerEvents: 'none'
+            pointerEvents: 'none',
+            padding: '1rem'
           }}>
             <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -83,7 +87,9 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
                     color: 'var(--text-dim)', 
                     padding: '8px', 
                     borderRadius: '50%',
-                    backgroundColor: 'rgba(255, 255, 255, 0.05)'
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    border: 'none',
+                    cursor: 'pointer'
                   }}
                   className="hover:text-white"
                 >
@@ -97,7 +103,8 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
           </div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
 

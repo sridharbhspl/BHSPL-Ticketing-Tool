@@ -9,6 +9,7 @@ from teams.models import Team, TeamMember
 STATUS_LABELS = {
     'Open': 'Open',
     'InProgress': 'In Progress',
+    'Blocked': 'Blocked',
     'InReview': 'In Review',
     'Resolved': 'Resolved',
     'Closed': 'Closed'

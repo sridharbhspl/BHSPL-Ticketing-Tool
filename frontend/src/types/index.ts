@@ -1,4 +1,4 @@
-export type TicketStatus = 'Open' | 'In Progress' | 'In Review' | 'Resolved' | 'Closed';
+export type TicketStatus = 'Open' | 'In Progress' | 'Blocked' | 'In Review' | 'Resolved' | 'Closed';
 export type TicketPriority = 'Low' | 'Medium' | 'High' | 'Urgent';
 export type TicketType = 'Bug' | 'Feature' | 'Task' | 'Improvement';
 
@@ -125,3 +125,25 @@ export type AppNotification = {
   projectLevel?: boolean;
   teamLevel?: boolean;
 };
+
+export type Category = {
+  id: string | number;
+  name: string;
+};
+
+export type Subcategory = {
+  id: string | number;
+  category: string | number;
+  name: string;
+};
+
+export type TicketTypeOption = {
+  id: string | number;
+  name: string;
+};
+
+export type EnvironmentOption = {
+  id: string | number;
+  name: string;
+};
+

@@ -127,6 +127,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed = false,
       {/* Mobile Overlay */}
       {isOpen && (
         <div 
+          id="sidebar-overlay-mobile"
           onClick={onClose}
           style={{
             position: 'fixed',
@@ -138,24 +139,29 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed = false,
             backdropFilter: 'blur(4px)',
             zIndex: 99,
           }}
-          className="mobile-only"
+          className="mobile-only sidebar-mobile-overlay"
         />
       )}
       
-      <aside className={className || `sidebar glass custom-scrollbar ${isOpen ? 'open' : ''}`} style={{
-        height: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'fixed',
-        left: 0,
-        top: 0,
-        borderRight: '1px solid var(--border)',
-        zIndex: 100,
-        overflowY: 'auto',
-        overflowX: 'hidden',
-      }}>
+      <aside 
+        id="sidebar-container"
+        className={className || `sidebar glass custom-scrollbar ${isOpen ? 'open' : ''}`} 
+        style={{
+          height: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          position: 'fixed',
+          left: 0,
+          top: 0,
+          borderRight: '1px solid var(--border)',
+          zIndex: 100,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+        }}
+      >
       <motion.div
-        className="sidebar-logo"
+        id="sidebar-logo-container"
+        className="sidebar-logo-wrap"
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -235,7 +241,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed = false,
 
       <nav style={{ flex: 1 }}>
         {!isCollapsed && (
-          <p className="sidebar-section-title" style={{ fontSize: '0.7rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1rem', paddingLeft: '0.5rem' }}>Menu</p>
+          <p 
+            id="sidebar-menu-title"
+            className="sidebar-section-title sidebar-menu-title" 
+            style={{ fontSize: '0.7rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1rem', paddingLeft: '0.5rem' }}
+          >
+            Menu
+          </p>
         )}
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -245,6 +257,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed = false,
             return (
               <motion.div
                 key={item.id}
+                id={`sidebar-menu-item-${item.id}`}
+                className={`sidebar-menu-item ${isActive ? 'sidebar-menu-item-active' : ''}`}
                 title={isCollapsed ? `${item.label}${isRestricted ? ' (Restricted)' : ''}` : undefined}
                 whileHover={{ x: isCollapsed ? 0 : 5, scale: isCollapsed ? 1.08 : 1 }}
                 whileTap={{ scale: 0.97 }}
@@ -328,10 +342,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed = false,
         </div>
 
         {/* ── Portals Divider ── */}
-        <div style={{ margin: '1.5rem 0 0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div 
+          id="sidebar-portals-divider"
+          className="sidebar-portals-divider-container"
+          style={{ margin: '1.5rem 0 0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+        >
           <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border)' }} />
           {!isCollapsed && (
-            <span style={{ fontSize: '0.65rem', color: 'var(--text-dim)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', whiteSpace: 'nowrap' }}>
+            <span 
+              id="sidebar-portals-title"
+              className="sidebar-portals-section-title"
+              style={{ fontSize: '0.65rem', color: 'var(--text-dim)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', whiteSpace: 'nowrap' }}
+            >
               Portals
             </span>
           )}
@@ -344,6 +366,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed = false,
             return (
               <motion.div
                 key={item.id}
+                id={`sidebar-portal-item-${item.id}`}
+                className={`sidebar-portal-item ${isActive ? 'sidebar-portal-item-active' : ''}`}
                 title={isCollapsed ? item.label : undefined}
                 whileHover={{ x: isCollapsed ? 0 : 5, scale: isCollapsed ? 1.08 : 1 }}
                 whileTap={{ scale: 0.97 }}
@@ -389,6 +413,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed = false,
 
         {hasActionAccess(currentRole, 'create_ticket') && (
           <motion.button
+            id="sidebar-button-new-ticket"
+            className="sidebar-btn-new-ticket"
             title={isCollapsed ? 'New Ticket' : undefined}
             whileHover={{ scale: 1.02, boxShadow: '0 8px 25px var(--primary-glow)' }}
             whileTap={{ scale: 0.98 }}
@@ -595,6 +621,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed = false,
 
         {/* User Identity Hub */}
         <motion.div 
+          id="sidebar-user-hub"
+          className="sidebar-user-identity-hub"
           onClick={() => setIsSettingsOpen(!isSettingsOpen)}
           whileHover={{ backgroundColor: 'rgba(255,255,255,0.03)' }}
           style={{
@@ -658,6 +686,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed = false,
     {/* Dynamic Collapse/Expand Floating Trigger */}
     {!isOpen && onToggleCollapse && (
       <motion.button
+        id="sidebar-toggle-collapse-btn"
+        className="sidebar-toggle-btn"
         whileHover={{ scale: 1.1, backgroundColor: 'var(--primary)', color: '#000', borderColor: 'var(--primary)' }}
         whileTap={{ scale: 0.95 }}
         onClick={onToggleCollapse}
@@ -682,9 +712,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed = false,
         title={isCollapsed ? "Expand Menu" : "Collapse Menu"}
       >
         {isCollapsed ? (
-          <span style={{ fontSize: '0.8rem', fontWeight: 'bold', marginLeft: '1px', lineHeight: 1 }}>⮞</span>
+          <span id="sidebar-toggle-arrow-right" style={{ fontSize: '0.8rem', fontWeight: 'bold', marginLeft: '1px', lineHeight: 1 }}>⮞</span>
         ) : (
-          <span style={{ fontSize: '0.8rem', fontWeight: 'bold', marginRight: '1px', lineHeight: 1 }}>⮜</span>
+          <span id="sidebar-toggle-arrow-left" style={{ fontSize: '0.8rem', fontWeight: 'bold', marginRight: '1px', lineHeight: 1 }}>⮜</span>
         )}
       </motion.button>
     )}

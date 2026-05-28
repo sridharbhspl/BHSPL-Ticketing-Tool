@@ -19,13 +19,39 @@ django.setup()
 
 from django.contrib.auth import get_user_model
 from projects.models import Project, ProjectMember
-from tickets.models import Ticket, AuditLog, WorkLog, CustomerSatisfaction, SLABreachLog
+from tickets.models import Ticket, AuditLog, WorkLog, CustomerSatisfaction, SLABreachLog, TicketType, Category, Subcategory, Environment
 from teams.models import Team, TeamMember
 
 User = get_user_model()
 
 def seed_data():
     print("🌱 Starting database seeding...")
+
+    # Seed Categories and Subcategories
+    print("🌱 Seeding Categories and Subcategories...")
+    initial_categories = {
+        'Technical': ['API Error', 'Database', 'Integration', 'System Crash', 'UI/UX'],
+        'Access': ['Password Reset', 'New Account', 'Permissions', 'SSO Issue'],
+        'Billing': ['Invoice', 'Payment Failure', 'Refund', 'Subscription'],
+        'Other': ['Feedback', 'Feature Request', 'General Inquiry']
+    }
+    for cat_name, subcats in initial_categories.items():
+        cat, _ = Category.objects.get_or_create(name=cat_name)
+        for sub_name in subcats:
+            Subcategory.objects.get_or_create(category=cat, name=sub_name)
+
+    # Seed Ticket Types
+    print("🌱 Seeding Ticket Types...")
+    initial_types = ['Incident', 'Bug', 'Task', 'Improvement']
+    for type_name in initial_types:
+        TicketType.objects.get_or_create(name=type_name)
+
+    # Seed Environments
+    print("🌱 Seeding Environments...")
+    initial_environments = ['Prod', 'UAT', 'Test', 'Dev']
+    for env_name in initial_environments:
+        Environment.objects.get_or_create(name=env_name)
+
 
     # 1. Create a Default Project
     project, created = Project.objects.get_or_create(

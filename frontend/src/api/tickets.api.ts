@@ -1,7 +1,34 @@
 import { apiRequest } from './apiClient';
-import type { Ticket, SubTask, Project, User, Comment, Team, TeamMember, AppNotification } from '../types';
+import type { Ticket, SubTask, Project, User, Comment, Team, TeamMember, AppNotification, Category, Subcategory, TicketTypeOption, EnvironmentOption } from '../types';
 
 export const ticketsApi = {
+  // Environments
+  getEnvironments: () => apiRequest<EnvironmentOption[]>('environments/'),
+  createEnvironment: (environment: Partial<EnvironmentOption>) => apiRequest<EnvironmentOption>('environments/', {
+    method: 'POST',
+    body: JSON.stringify(environment),
+  }),
+
+  // Categories
+  getCategories: () => apiRequest<Category[]>('categories/'),
+  createCategory: (category: Partial<Category>) => apiRequest<Category>('categories/', {
+    method: 'POST',
+    body: JSON.stringify(category),
+  }),
+
+  // Subcategories
+  getSubcategories: () => apiRequest<Subcategory[]>('subcategories/'),
+  createSubcategory: (subcategory: Partial<Subcategory>) => apiRequest<Subcategory>('subcategories/', {
+    method: 'POST',
+    body: JSON.stringify(subcategory),
+  }),
+
+  // Ticket Types
+  getTicketTypes: () => apiRequest<TicketTypeOption[]>('ticket-types/'),
+  createTicketType: (ticketType: Partial<TicketTypeOption>) => apiRequest<TicketTypeOption>('ticket-types/', {
+    method: 'POST',
+    body: JSON.stringify(ticketType),
+  }),
   // Tickets
   getTickets: () => apiRequest<Ticket[]>('tickets/'),
   createTicket: (ticket: Partial<Ticket>) => apiRequest<Ticket>('tickets/', {
@@ -56,6 +83,13 @@ export const ticketsApi = {
     body: JSON.stringify(subTask),
   }),
   getSubTasks: () => apiRequest<SubTask[]>('subtasks/'),
+  updateSubTask: (id: string | number, updates: Partial<SubTask>) => apiRequest<SubTask>(`subtasks/${id}/`, {
+    method: 'PATCH',
+    body: JSON.stringify(updates),
+  }),
+  deleteSubTask: (id: string | number) => apiRequest<void>(`subtasks/${id}/`, {
+    method: 'DELETE',
+  }),
   
   // Teams
   getTeams: () => apiRequest<Team[]>('teams/'),
@@ -84,7 +118,23 @@ export const ticketsApi = {
   }),
 
   // Notifications
-  getNotifications: () => apiRequest<AppNotification[]>('notifications/'),
+  // Backend returns `createdAt`; frontend AppNotification type uses `timestamp`.
+  // Map at the API boundary — keeps the frontend type contract stable.
+  getNotifications: async (): Promise<AppNotification[]> => {
+    const raw = await apiRequest<Array<Record<string, any>>>('notifications/');
+    return raw.map((n) => ({
+      id: String(n.id),
+      type: n.type,
+      title: n.actorName ? `${n.actorName}` : 'Notification',
+      message: n.message,
+      actorName: n.actorName,
+      actorAvatar: n.actorAvatar || '',
+      targetId: n.targetId || '',
+      // Map createdAt → timestamp (backend removed the duplicate `timestamp` field)
+      timestamp: n.timestamp ?? n.createdAt,
+      isRead: n.isRead,
+    }));
+  },
   markNotificationAsRead: (id: string | number) => apiRequest<AppNotification>(`notifications/${id}/`, {
     method: 'PATCH',
     body: JSON.stringify({ isRead: true }),

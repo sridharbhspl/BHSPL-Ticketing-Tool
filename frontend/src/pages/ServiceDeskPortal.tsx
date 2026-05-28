@@ -121,7 +121,11 @@ const ServiceDeskPortal: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: 'var(--content-padding)', maxWidth: '1100px', margin: '0 auto' }}>
+    <div 
+      id="servicedesk-portal-root"
+      className="servicedesk-portal-view"
+      style={{ padding: 'var(--content-padding)', maxWidth: '1100px', margin: '0 auto' }}
+    >
       {/* Header */}
       <motion.div initial={{ opacity:0, y:-16 }} animate={{ opacity:1, y:0 }} style={{ marginBottom:'2rem' }}>
         <h1 style={{ fontSize:'1.75rem', fontWeight:800, color:'white', marginBottom:'4px' }}>Service Desk Portal</h1>
@@ -131,14 +135,23 @@ const ServiceDeskPortal: React.FC = () => {
       </motion.div>
 
       {/* Stats */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(180px, 1fr))', gap:'1rem', marginBottom:'2rem' }}>
+      <div 
+        id="servicedesk-stats-grid"
+        className="servicedesk-stats-container"
+        style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(180px, 1fr))', gap:'1rem', marginBottom:'2rem' }}
+      >
         {[
           { label:'Open Requests',    value: stats.open,      color:'#f59e0b', icon: Clock        },
           { label:'Fulfilled',        value: stats.fulfilled,  color:'#10b981', icon: CheckCircle  },
           { label:'Total Submitted',  value: stats.total,      color:'#8b5cf6', icon: HelpCircle   },
         ].map((s, i) => (
-          <motion.div key={s.label} initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay: i * 0.07 }}
-            style={{ background:`${s.color}0d`, border:`1px solid ${s.color}33`, borderRadius:'16px', padding:'1.25rem', display:'flex', alignItems:'center', gap:'1rem' }}>
+          <motion.div 
+            key={s.label}
+            id={`servicedesk-stat-${s.label.toLowerCase().replace(/\s+/g, '-')}`}
+            className="servicedesk-stat-card"
+            initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay: i * 0.07 }}
+            style={{ background:`${s.color}0d`, border:`1px solid ${s.color}33`, borderRadius:'16px', padding:'1.25rem', display:'flex', alignItems:'center', gap:'1rem' }}
+          >
             <div style={{ width:44, height:44, borderRadius:'12px', background:`${s.color}18`, display:'flex', alignItems:'center', justifyContent:'center' }}>
               <s.icon size={20} color={s.color} />
             </div>
@@ -154,9 +167,16 @@ const ServiceDeskPortal: React.FC = () => {
       <h2 style={{ fontSize:'0.85rem', fontWeight:700, color:'var(--text-dim)', textTransform:'uppercase', letterSpacing:'1px', marginBottom:'1rem' }}>
         New Request — Select Category
       </h2>
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(160px, 1fr))', gap:'0.875rem', marginBottom:'2rem' }}>
+      <div 
+        id="servicedesk-category-grid"
+        className="servicedesk-category-container"
+        style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(160px, 1fr))', gap:'0.875rem', marginBottom:'2rem' }}
+      >
         {CATEGORIES.map((cat, i) => (
-          <motion.div key={cat.id}
+          <motion.div 
+            key={cat.id}
+            id={`servicedesk-category-card-${cat.id}`}
+            className="servicedesk-category-card"
             initial={{ opacity:0, scale:0.95 }} animate={{ opacity:1, scale:1 }} transition={{ delay: i * 0.05 }}
             whileHover={{ scale:1.04, borderColor: cat.color }}
             whileTap={{ scale:0.97 }}
@@ -164,7 +184,8 @@ const ServiceDeskPortal: React.FC = () => {
             style={{ background: selectedCat === cat.id ? `${cat.color}15` : 'var(--bg-card)',
               border: `1px solid ${selectedCat === cat.id ? cat.color : 'var(--border)'}`,
               borderRadius:'16px', padding:'1.25rem', cursor:'pointer',
-              transition:'all 0.2s ease' }}>
+              transition:'all 0.2s ease' }}
+          >
             <div style={{ width:40, height:40, borderRadius:'12px', background:`${cat.color}18`, display:'flex', alignItems:'center', justifyContent:'center', marginBottom:'0.875rem' }}>
               <cat.icon size={20} color={cat.color} />
             </div>
@@ -177,9 +198,15 @@ const ServiceDeskPortal: React.FC = () => {
       {/* Request form drawer */}
       <AnimatePresence>
         {showForm && (
-          <motion.div initial={{ opacity:0, y:20, scale:0.98 }} animate={{ opacity:1, y:0, scale:1 }} exit={{ opacity:0, y:20, scale:0.98 }}
+          <motion.div 
+            id="servicedesk-request-form-card"
+            className="servicedesk-request-form-panel"
+            initial={{ opacity:0, y:20, scale:0.98 }} 
+            animate={{ opacity:1, y:0, scale:1 }} 
+            exit={{ opacity:0, y:20, scale:0.98 }}
             style={{ background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:'20px', padding:'1.5rem', marginBottom:'2rem',
-              boxShadow:'0 20px 60px rgba(0,0,0,0.4)' }}>
+              boxShadow:'0 20px 60px rgba(0,0,0,0.4)' }}
+          >
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1.25rem' }}>
               <h3 style={{ fontWeight:700, color:'white', fontSize:'1rem' }}>
                 {CATEGORIES.find(c => c.id === selectedCat)?.label} Request
@@ -190,30 +217,53 @@ const ServiceDeskPortal: React.FC = () => {
               </motion.button>
             </div>
             <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap:'0.875rem' }}>
-              <input required placeholder="Request Title *" value={form.title}
+              <input 
+                id="servicedesk-form-title-input"
+                className="servicedesk-form-input"
+                required placeholder="Request Title *" value={form.title}
                 onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
-                style={{ background:'rgba(255,255,255,0.05)', border:'1px solid var(--border)', borderRadius:'10px', padding:'0.75rem', color:'white', fontSize:'0.875rem' }} />
-              <textarea required rows={3} placeholder="Describe your requirement in detail *" value={form.description}
+                style={{ background:'rgba(255,255,255,0.05)', border:'1px solid var(--border)', borderRadius:'10px', padding:'0.75rem', color:'white', fontSize:'0.875rem' }} 
+              />
+              <textarea 
+                id="servicedesk-form-description-textarea"
+                className="servicedesk-form-textarea"
+                required rows={3} placeholder="Describe your requirement in detail *" value={form.description}
                 onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
-                style={{ background:'rgba(255,255,255,0.05)', border:'1px solid var(--border)', borderRadius:'10px', padding:'0.75rem', color:'white', fontSize:'0.875rem', resize:'none' }} />
+                style={{ background:'rgba(255,255,255,0.05)', border:'1px solid var(--border)', borderRadius:'10px', padding:'0.75rem', color:'white', fontSize:'0.875rem', resize:'none' }} 
+              />
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0.75rem' }}>
                 <div>
-                  <label style={{ fontSize:'0.75rem', color:'var(--text-dim)', fontWeight:600 }}>Priority</label>
-                  <select value={form.priority} onChange={e => setForm(p => ({ ...p, priority: e.target.value as Priority }))}
-                    style={{ width:'100%', marginTop:'4px', background:'rgba(255,255,255,0.05)', border:'1px solid var(--border)', borderRadius:'10px', padding:'0.625rem', color:'white', fontSize:'0.875rem' }}>
+                  <label htmlFor="servicedesk-form-priority-select" style={{ fontSize:'0.75rem', color:'var(--text-dim)', fontWeight:600 }}>Priority</label>
+                  <select 
+                    id="servicedesk-form-priority-select"
+                    className="servicedesk-form-select"
+                    value={form.priority} 
+                    onChange={e => setForm(p => ({ ...p, priority: e.target.value as Priority }))}
+                    style={{ width:'100%', marginTop:'4px', background:'rgba(255,255,255,0.05)', border:'1px solid var(--border)', borderRadius:'10px', padding:'0.625rem', color:'white', fontSize:'0.875rem' }}
+                  >
                     <option>Low</option><option>Medium</option><option>High</option><option>Critical</option>
                   </select>
                 </div>
                 <div>
-                  <label style={{ fontSize:'0.75rem', color:'var(--text-dim)', fontWeight:600 }}>Location / Desk No.</label>
-                  <input placeholder="e.g. Block A - Desk 14" value={form.location}
+                  <label htmlFor="servicedesk-form-location-input" style={{ fontSize:'0.75rem', color:'var(--text-dim)', fontWeight:600 }}>Location / Desk No.</label>
+                  <input 
+                    id="servicedesk-form-location-input"
+                    className="servicedesk-form-input"
+                    placeholder="e.g. Block A - Desk 14" value={form.location}
                     onChange={e => setForm(p => ({ ...p, location: e.target.value }))}
-                    style={{ width:'100%', marginTop:'4px', boxSizing:'border-box', background:'rgba(255,255,255,0.05)', border:'1px solid var(--border)', borderRadius:'10px', padding:'0.625rem', color:'white', fontSize:'0.875rem' }} />
+                    style={{ width:'100%', marginTop:'4px', boxSizing:'border-box', background:'rgba(255,255,255,0.05)', border:'1px solid var(--border)', borderRadius:'10px', padding:'0.625rem', color:'white', fontSize:'0.875rem' }} 
+                  />
                 </div>
               </div>
-              <motion.button type="submit" whileHover={{ scale:1.02, boxShadow:'0 8px 25px var(--primary-glow)' }} whileTap={{ scale:0.98 }}
+              <motion.button 
+                id="servicedesk-form-submit-btn"
+                className="servicedesk-form-submit-button"
+                type="submit" 
+                whileHover={{ scale:1.02, boxShadow:'0 8px 25px var(--primary-glow)' }} 
+                whileTap={{ scale:0.98 }}
                 style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', padding:'12px', borderRadius:'12px',
-                  background:'var(--grad-primary)', color:'#000', fontWeight:700, fontSize:'0.9rem', border:'none', cursor:'pointer' }}>
+                  background:'var(--grad-primary)', color:'#000', fontWeight:700, fontSize:'0.9rem', border:'none', cursor:'pointer' }}
+              >
                 {submitting
                   ? <><motion.div animate={{ rotate:360 }} transition={{ duration:0.8, repeat:Infinity, ease:'linear' }}
                       style={{ width:16, height:16, border:'2px solid #000', borderTopColor:'transparent', borderRadius:'50%' }} /> Submitting…</>
@@ -225,16 +275,28 @@ const ServiceDeskPortal: React.FC = () => {
       </AnimatePresence>
 
       {/* Request tracker */}
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1rem', flexWrap:'wrap', gap:'0.75rem' }}>
+      <div 
+        id="servicedesk-tracker-header"
+        className="servicedesk-tracker-controls"
+        style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1rem', flexWrap:'wrap', gap:'0.75rem' }}
+      >
         <h2 style={{ fontSize:'0.85rem', fontWeight:700, color:'var(--text-dim)', textTransform:'uppercase', letterSpacing:'1px' }}>My Requests</h2>
         <div style={{ display:'flex', gap:'0.625rem', alignItems:'center' }}>
           <div style={{ display:'flex', alignItems:'center', gap:'8px', background:'rgba(255,255,255,0.04)', border:'1px solid var(--border)', borderRadius:'10px', padding:'6px 12px' }}>
             <Search size={14} color="var(--text-dim)" />
-            <input placeholder="Search…" value={search} onChange={e => setSearch(e.target.value)}
-              style={{ background:'transparent', border:'none', color:'white', fontSize:'0.85rem', outline:'none', width:'140px' }} />
+            <input 
+              id="servicedesk-tracker-search-input"
+              className="servicedesk-tracker-search-field"
+              placeholder="Search…" value={search} onChange={e => setSearch(e.target.value)}
+              style={{ background:'transparent', border:'none', color:'white', fontSize:'0.85rem', outline:'none', width:'140px' }} 
+            />
           </div>
-          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value as RequestStatus | 'All')}
-            style={{ background:'rgba(255,255,255,0.04)', border:'1px solid var(--border)', borderRadius:'10px', padding:'6px 12px', color:'white', fontSize:'0.85rem' }}>
+          <select 
+            id="servicedesk-tracker-status-select"
+            className="servicedesk-tracker-status-filter"
+            value={filterStatus} onChange={e => setFilterStatus(e.target.value as RequestStatus | 'All')}
+            style={{ background:'rgba(255,255,255,0.04)', border:'1px solid var(--border)', borderRadius:'10px', padding:'6px 12px', color:'white', fontSize:'0.85rem' }}
+          >
             <option value="All">All Status</option>
             <option>Under Review</option>
             <option>In Progress</option>
@@ -244,17 +306,25 @@ const ServiceDeskPortal: React.FC = () => {
         </div>
       </div>
 
-      <div style={{ display:'flex', flexDirection:'column', gap:'0.625rem' }}>
+      <div 
+        id="servicedesk-requests-list-container"
+        className="servicedesk-requests-list"
+        style={{ display:'flex', flexDirection:'column', gap:'0.625rem' }}
+      >
         {filtered.length === 0 && (
           <div style={{ textAlign:'center', padding:'3rem', color:'var(--text-dim)', fontSize:'0.9rem' }}>
             No requests found
           </div>
         )}
         {filtered.map((req, i) => (
-          <motion.div key={req.id}
+          <motion.div 
+            key={req.id}
+            id={`servicedesk-request-row-${req.id}`}
+            className="servicedesk-request-row"
             initial={{ opacity:0, x:-16 }} animate={{ opacity:1, x:0 }} transition={{ delay: i * 0.04 }}
             style={{ display:'grid', gridTemplateColumns:'auto 1fr auto auto auto', alignItems:'center', gap:'1rem',
-              background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:'14px', padding:'1rem 1.25rem' }}>
+              background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:'14px', padding:'1rem 1.25rem' }}
+          >
             {/* ID */}
             <div style={{ display:'flex', alignItems:'center', justifyContent:'center', width:38, height:38, borderRadius:'10px', background:'rgba(245,158,11,0.08)' }}>
               <HelpCircle size={18} color="#f59e0b" />

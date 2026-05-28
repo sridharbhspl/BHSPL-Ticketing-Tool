@@ -121,7 +121,11 @@ const PayrollPortal: React.FC = () => {
   ];
 
   return (
-    <div style={{ padding: 'var(--content-padding)', maxWidth: '1100px', margin: '0 auto' }}>
+    <div 
+      id="payroll-portal-root"
+      className="payroll-portal-view"
+      style={{ padding: 'var(--content-padding)', maxWidth: '1100px', margin: '0 auto' }}
+    >
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
         style={{ marginBottom: '2rem' }}>
@@ -134,11 +138,19 @@ const PayrollPortal: React.FC = () => {
       </motion.div>
 
       {/* Metric cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+      <div 
+        id="payroll-metrics-grid"
+        className="payroll-metrics-container"
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginBottom: '2rem' }}
+      >
         {METRICS.map((m, i) => (
-          <motion.div key={m.label}
+          <motion.div 
+            key={m.label}
+            id={`payroll-metric-${m.label.toLowerCase().replace(/\s+/g, '-')}`}
+            className="payroll-metric-card"
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-            style={{ background: m.bg, border: `1px solid ${m.color}33`, borderRadius: '16px', padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            style={{ background: m.bg, border: `1px solid ${m.color}33`, borderRadius: '16px', padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}
+          >
             <div style={{ width: 44, height: 44, borderRadius: '12px', backgroundColor: `${m.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <m.icon size={20} color={m.color} />
             </div>
@@ -152,16 +164,24 @@ const PayrollPortal: React.FC = () => {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '1.5rem', alignItems: 'start' }}>
         {/* Payslips list */}
-        <div>
+        <div id="payroll-payslip-history-container" className="payroll-payslip-history">
           <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'white', marginBottom: '1rem' }}>Payslip History</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {PAYSLIPS.map((ps, i) => (
-              <motion.div key={ps.id}
+              <motion.div 
+                key={ps.id}
+                id={`payroll-payslip-row-${ps.id}`}
+                className="payroll-payslip-row"
                 initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
-                style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '14px', overflow: 'hidden' }}>
+                style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '14px', overflow: 'hidden' }}
+              >
                 {/* Row */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1.25rem', cursor: 'pointer' }}
-                  onClick={() => setExpandedId(expandedId === ps.id ? null : ps.id)}>
+                <div 
+                  id={`payroll-payslip-trigger-${ps.id}`}
+                  className="payroll-payslip-trigger-area"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1.25rem', cursor: 'pointer' }}
+                  onClick={() => setExpandedId(expandedId === ps.id ? null : ps.id)}
+                >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <div style={{ width: 38, height: 38, borderRadius: '10px', background: 'rgba(245,158,11,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <FileText size={18} color="#f59e0b" />
@@ -173,10 +193,13 @@ const PayrollPortal: React.FC = () => {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <div style={{ textAlign: 'right' }}>
-                      <p style={{ fontWeight: 700, color: 'white' }}>{fmt(ps.net)}</p>
-                      <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: '6px',
-                        backgroundColor: ps.status === 'Paid' ? 'rgba(16,185,129,0.1)' : ps.status === 'Processing' ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)',
-                        color: ps.status === 'Paid' ? '#10b981' : ps.status === 'Processing' ? '#f59e0b' : '#ef4444' }}>
+                      <p id={`payroll-payslip-net-${ps.id}`} style={{ fontWeight: 700, color: 'white' }}>{fmt(ps.net)}</p>
+                      <span 
+                        id={`payroll-payslip-status-${ps.id}`}
+                        style={{ fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: '6px',
+                          backgroundColor: ps.status === 'Paid' ? 'rgba(16,185,129,0.1)' : ps.status === 'Processing' ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)',
+                          color: ps.status === 'Paid' ? '#10b981' : ps.status === 'Processing' ? '#f59e0b' : '#ef4444' }}
+                      >
                         {ps.status}
                       </span>
                     </div>
@@ -192,7 +215,11 @@ const PayrollPortal: React.FC = () => {
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.25 }}
                       style={{ borderTop: '1px solid var(--border)', padding: '1rem 1.25rem', overflow: 'hidden' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', marginBottom: '1rem' }}>
+                      <div 
+                        id={`payroll-payslip-breakdown-${ps.id}`}
+                        className="payroll-payslip-breakdown-details"
+                        style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', marginBottom: '1rem' }}
+                      >
                         {[
                           { l: 'Basic Pay',    v: ps.basic,      c: '#10b981' },
                           { l: 'HRA',          v: ps.hra,        c: '#8b5cf6' },
@@ -207,10 +234,15 @@ const PayrollPortal: React.FC = () => {
                           </div>
                         ))}
                       </div>
-                      <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                      <motion.button 
+                        id={`payroll-payslip-pdf-btn-${ps.id}`}
+                        className="payroll-download-pdf-btn"
+                        whileHover={{ scale: 1.02 }} 
+                        whileTap={{ scale: 0.98 }}
                         onClick={() => handleDownload(ps)}
                         style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 18px', borderRadius: '10px',
-                          background: 'var(--grad-primary)', color: '#000', fontWeight: 700, fontSize: '0.85rem', border: 'none', cursor: 'pointer' }}>
+                          background: 'var(--grad-primary)', color: '#000', fontWeight: 700, fontSize: '0.85rem', border: 'none', cursor: 'pointer' }}
+                      >
                         {downloading === ps.id
                           ? <motion.div animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
                               style={{ width: 16, height: 16, border: '2px solid #000', borderTopColor: 'transparent', borderRadius: '50%' }} />
@@ -226,10 +258,14 @@ const PayrollPortal: React.FC = () => {
         </div>
 
         {/* Right column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div id="payroll-sidebar-controls" className="payroll-right-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {/* Salary Breakdown rings */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-            style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '1.25rem' }}>
+          <motion.div 
+            id="payroll-breakdown-card"
+            className="payroll-breakdown-panel"
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '1.25rem' }}
+          >
             <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'white', marginBottom: '1.25rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Salary Breakdown</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.25rem' }}>
               <Ring pct={Math.round((latest.basic / gross) * 100)} color="#f59e0b" label="Basic Pay" value={fmt(latest.basic)} />
@@ -240,13 +276,19 @@ const PayrollPortal: React.FC = () => {
           </motion.div>
 
           {/* HR Query Box */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-            style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '1.25rem' }}>
+          <motion.div 
+            id="payroll-query-card"
+            className="payroll-query-panel"
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '1.25rem' }}
+          >
             <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'white', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>HR Payroll Query</h3>
             <form onSubmit={handleHrSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {/* Custom Dropdown */}
               <div ref={dropdownRef} style={{ position: 'relative' }}>
                 <motion.div
+                  id="payroll-query-type-dropdown"
+                  className="payroll-query-dropdown-trigger"
                   whileHover={{ borderColor: 'rgba(255,255,255,0.2)' }}
                   onClick={() => setIsDropdownOpen(p => !p)}
                   style={{
@@ -267,6 +309,8 @@ const PayrollPortal: React.FC = () => {
                 <AnimatePresence>
                   {isDropdownOpen && (
                     <motion.div
+                      id="payroll-query-type-list"
+                      className="payroll-query-dropdown-options"
                       initial={{ opacity: 0, y: -8, scale: 0.97 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -8, scale: 0.97 }}
@@ -286,6 +330,8 @@ const PayrollPortal: React.FC = () => {
                       {HR_QUERY_OPTIONS.map(opt => (
                         <motion.div
                           key={opt}
+                          id={`payroll-query-option-${opt.toLowerCase().replace(/\s+/g, '-')}`}
+                          className="payroll-query-dropdown-item"
                           whileHover={{ backgroundColor: 'rgba(245,158,11,0.08)' }}
                           onClick={() => { setHrForm(p => ({ ...p, type: opt })); setIsDropdownOpen(false); }}
                           style={{
@@ -310,13 +356,25 @@ const PayrollPortal: React.FC = () => {
                   )}
                 </AnimatePresence>
               </div>
-              <textarea rows={4} placeholder="Describe your query in detail…"
-                value={hrForm.message} onChange={e => setHrForm(p => ({ ...p, message: e.target.value }))}
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '10px', padding: '0.625rem', color: 'white', fontSize: '0.85rem', resize: 'none' }} />
-              <motion.button type="submit" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+              <textarea 
+                id="payroll-query-message-textarea"
+                className="payroll-query-message-field"
+                rows={4} 
+                placeholder="Describe your query in detail…"
+                value={hrForm.message} 
+                onChange={e => setHrForm(p => ({ ...p, message: e.target.value }))}
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '10px', padding: '0.625rem', color: 'white', fontSize: '0.85rem', resize: 'none' }} 
+              />
+              <motion.button 
+                id="payroll-query-submit-btn"
+                className="payroll-query-submit-button"
+                type="submit" 
+                whileHover={{ scale: 1.02 }} 
+                whileTap={{ scale: 0.98 }}
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px', borderRadius: '10px',
                   background: hrSent ? 'rgba(16,185,129,0.15)' : 'var(--grad-primary)', color: hrSent ? '#10b981' : '#000',
-                  fontWeight: 700, fontSize: '0.85rem', border: hrSent ? '1px solid #10b981' : 'none', cursor: 'pointer', transition: 'all 0.3s' }}>
+                  fontWeight: 700, fontSize: '0.85rem', border: hrSent ? '1px solid #10b981' : 'none', cursor: 'pointer', transition: 'all 0.3s' }}
+              >
                 {hrSent ? <><CheckCircle size={15} /> Submitted!</> : <><Send size={15} /> Submit Query</>}
               </motion.button>
             </form>

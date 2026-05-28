@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Ticket, SubTask, Project, User, TicketFilters, Comment, Team, TeamMember } from '../types';
+import type { Ticket, SubTask, Project, User, TicketFilters, Comment, Team, TeamMember, Category, Subcategory, TicketTypeOption, EnvironmentOption } from '../types';
 import { useNotificationStore } from './useNotificationStore';
 import { ticketsApi } from '../api/tickets.api';
 import { useAuthStore } from './useAuthStore';
@@ -14,6 +14,10 @@ interface TicketState {
   comments: Comment[];
   currentUser: User | null;
   filters: TicketFilters;
+  categories: Category[];
+  subcategories: Subcategory[];
+  ticketTypes: TicketTypeOption[];
+  environments: EnvironmentOption[];
   isCreateModalOpen: boolean;
   isSubTaskModalOpen: boolean;
   selectedTicketId: string | null;
@@ -37,6 +41,10 @@ interface TicketState {
   addProject: (project: Partial<Project>) => Promise<void>;
   updateProject: (id: string, updates: Partial<Project>) => Promise<void>;
   deleteProject: (id: string) => Promise<void>;
+  addCategory: (category: Partial<Category>) => Promise<Category>;
+  addSubcategory: (subcategory: Partial<Subcategory>) => Promise<Subcategory>;
+  addTicketType: (ticketType: Partial<TicketTypeOption>) => Promise<TicketTypeOption>;
+  addEnvironment: (environment: Partial<EnvironmentOption>) => Promise<EnvironmentOption>;
   addTeam: (team: Partial<Team>) => Promise<Team>;
   updateTeam: (id: string, updates: Partial<Team>) => Promise<Team>;
   deleteTeam: (id: string) => Promise<void>;
@@ -57,6 +65,10 @@ export const useTicketStore = create<TicketState>((set) => ({
   comments: [],
   currentUser: null,
   filters: {},
+  categories: [],
+  subcategories: [],
+  ticketTypes: [],
+  environments: [],
   isCreateModalOpen: false,
   isSubTaskModalOpen: false,
   selectedTicketId: null,
@@ -67,16 +79,20 @@ export const useTicketStore = create<TicketState>((set) => ({
   fetchInitialData: async () => {
     set({ isLoading: true, error: null });
     try {
-      const [tickets, projects, users, subTasks, teams, teamMembers] = await Promise.all([
+      const [tickets, projects, users, subTasks, teams, teamMembers, categories, subcategories, ticketTypes, environments] = await Promise.all([
         ticketsApi.getTickets(),
         ticketsApi.getProjects(),
         ticketsApi.getUsers(),
         ticketsApi.getSubTasks(),
         ticketsApi.getTeams(),
         ticketsApi.getTeamMembers(),
+        ticketsApi.getCategories(),
+        ticketsApi.getSubcategories(),
+        ticketsApi.getTicketTypes(),
+        ticketsApi.getEnvironments(),
       ]);
       const currentUser = useAuthStore.getState().user;
-      set({ tickets, projects, users, subTasks, teams, teamMembers, currentUser, isLoading: false });
+      set({ tickets, projects, users, subTasks, teams, teamMembers, categories, subcategories, ticketTypes, environments, currentUser, isLoading: false });
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
     }
@@ -86,7 +102,7 @@ export const useTicketStore = create<TicketState>((set) => ({
     try {
       const newTicket = await ticketsApi.createTicket(ticketInput);
       set((state) => ({ tickets: [newTicket, ...state.tickets] }));
-      
+
       const currentUser = useAuthStore.getState().user;
       useNotificationStore.getState().addNotification({
         type: 'CREATE',
@@ -109,7 +125,7 @@ export const useTicketStore = create<TicketState>((set) => ({
       if (!subTaskInput.parentTicketId) throw new Error('Parent Ticket ID is required');
       const newSubTask = await ticketsApi.addSubTask(subTaskInput.parentTicketId, subTaskInput);
       set((state) => ({ subTasks: [newSubTask, ...state.subTasks] }));
-      
+
       const currentUser = useAuthStore.getState().user;
       useNotificationStore.getState().addNotification({
         type: 'WORKLOG',
@@ -130,7 +146,7 @@ export const useTicketStore = create<TicketState>((set) => ({
     try {
       const newComment = await ticketsApi.addComment(ticketId, content);
       set((state) => ({ comments: [...state.comments, newComment] }));
-      
+
       const currentUser = useAuthStore.getState().user;
       useNotificationStore.getState().addNotification({
         type: 'UPDATE',
@@ -190,14 +206,14 @@ export const useTicketStore = create<TicketState>((set) => ({
 
   updateSubTask: async (id, updates) => {
     try {
-      // Assuming subtasks can be updated via a generic endpoint if needed, 
-      // but for now updating local state if API success is implied or would need a separate subtask update endpoint.
-      // Since we don't have a direct subtask update endpoint in ticketsApi yet, I'll update local for now or add one.
+      // ✅ FIX: Persist to Django backend via PATCH /api/subtasks/{id}/
+      const updatedSubTask = await ticketsApi.updateSubTask(id, updates);
       set((state) => ({
-        subTasks: state.subTasks.map((st) => (st.id === id ? { ...st, ...updates, updatedAt: new Date().toISOString() } : st))
+        subTasks: state.subTasks.map((st) => (st.id === id ? updatedSubTask : st))
       }));
     } catch (err: any) {
       set({ error: err.message });
+      throw err;
     }
   },
 
@@ -214,7 +230,7 @@ export const useTicketStore = create<TicketState>((set) => ({
   },
 
   setFilters: (filters) => set({ filters }),
-  
+
   setCreateModalOpen: (open) => set({ isCreateModalOpen: open }),
   setSubTaskModalOpen: (open) => set({ isSubTaskModalOpen: open }),
   setSelectedTicketId: (id: string | null) => set({ selectedTicketId: id }),
@@ -224,6 +240,46 @@ export const useTicketStore = create<TicketState>((set) => ({
     try {
       const newProject = await ticketsApi.createProject(projectInput);
       set((state) => ({ projects: [...state.projects, newProject] }));
+    } catch (err: any) {
+      set({ error: err.message });
+      throw err;
+    }
+  },
+  addCategory: async (categoryInput) => {
+    try {
+      const newCategory = await ticketsApi.createCategory(categoryInput);
+      set((state) => ({ categories: [...state.categories, newCategory] }));
+      return newCategory;
+    } catch (err: any) {
+      set({ error: err.message });
+      throw err;
+    }
+  },
+  addSubcategory: async (subcategoryInput) => {
+    try {
+      const newSubcategory = await ticketsApi.createSubcategory(subcategoryInput);
+      set((state) => ({ subcategories: [...state.subcategories, newSubcategory] }));
+      return newSubcategory;
+    } catch (err: any) {
+      set({ error: err.message });
+      throw err;
+    }
+  },
+  addTicketType: async (ticketTypeInput) => {
+    try {
+      const newTicketType = await ticketsApi.createTicketType(ticketTypeInput);
+      set((state) => ({ ticketTypes: [...state.ticketTypes, newTicketType] }));
+      return newTicketType;
+    } catch (err: any) {
+      set({ error: err.message });
+      throw err;
+    }
+  },
+  addEnvironment: async (environmentInput) => {
+    try {
+      const newEnvironment = await ticketsApi.createEnvironment(environmentInput);
+      set((state) => ({ environments: [...state.environments, newEnvironment] }));
+      return newEnvironment;
     } catch (err: any) {
       set({ error: err.message });
       throw err;

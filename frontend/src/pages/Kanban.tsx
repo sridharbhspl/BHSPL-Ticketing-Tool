@@ -14,14 +14,15 @@ import {
   BarChart3,
   ChevronDown,
   Search,
-  X
+  X,
+  Ban
 } from 'lucide-react';
 import { useTicketStore } from '../store/useTicketStore';
 import Breadcrumbs from '../components/Breadcrumbs';
 import CreateSubTaskModal from '../components/CreateSubTaskModal';
 import type { TicketStatus, Ticket } from '../types';
 
-const statuses: TicketStatus[] = ['Open', 'In Progress', 'In Review', 'Resolved'];
+const statuses: TicketStatus[] = ['Open', 'In Progress', 'Blocked', 'In Review', 'Resolved'];
 
 const KanbanCard: React.FC<{ ticket: Ticket; index: number }> = ({ ticket, index }) => {
   const { users, setSelectedTicketId } = useTicketStore();
@@ -57,6 +58,8 @@ const KanbanCard: React.FC<{ ticket: Ticket; index: number }> = ({ ticket, index
     <Draggable draggableId={ticket.id} index={index}>
       {(provided, snapshot) => (
         <div
+          id={`kanban-card-${ticket.id}`}
+          className="kanban-card-drag-wrapper"
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
@@ -68,6 +71,7 @@ const KanbanCard: React.FC<{ ticket: Ticket; index: number }> = ({ ticket, index
           }}
         >
           <motion.div
+            id={`kanban-card-inner-${ticket.id}`}
             animate={{
               rotate: snapshot.isDragging ? 3 : 0,
               scale: snapshot.isDragging ? 1.04 : 1,
@@ -76,7 +80,7 @@ const KanbanCard: React.FC<{ ticket: Ticket; index: number }> = ({ ticket, index
                 : '0 4px 12px rgba(0,0,0,0.1)'
             }}
             whileHover={{ y: -2, border: '1px solid rgba(255, 255, 255, 0.15)' }}
-            className="glass"
+            className="glass kanban-card-content"
             style={{
               padding: '0.875rem',
               borderRadius: '12px',
@@ -247,6 +251,7 @@ const Kanban: React.FC = () => {
     switch (status) {
       case 'Open': return <Clock size={18} color="#fbbf24" />;
       case 'In Progress': return <AlertCircle size={18} color="#ea580c" />;
+      case 'Blocked': return <Ban size={18} color="#ef4444" />;
       case 'In Review': return <BarChart3 size={18} color="#3b82f6" />;
       case 'Resolved': return <CheckCircle2 size={18} color="#10b981" />;
       default: return <Clock size={18} />;
@@ -255,7 +260,7 @@ const Kanban: React.FC = () => {
 
   return (
     <div style={{ 
-      padding: '2rem 2.5rem', 
+      padding: '1.25rem 1.5rem', 
       height: 'calc(100vh - 80px)', 
       display: 'flex', 
       flexDirection: 'column',
@@ -268,8 +273,13 @@ const Kanban: React.FC = () => {
           <p style={{ color: 'var(--text-dim)' }}>Manage your team's progress with agile precision.</p>
         </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <div style={{ position: 'relative' }}>
+          <div 
+            id="kanban-header-project-group"
+            className="kanban-header-project-select-container"
+            style={{ position: 'relative' }}
+          >
             <select
+              id="kanban-header-project-select"
               value={selectedProjectId}
               onChange={(e) => {
                 setSearchParams(prev => {
@@ -278,7 +288,7 @@ const Kanban: React.FC = () => {
                   return prev;
                 }, { replace: true });
               }}
-              className="btn-secondary"
+              className="btn-secondary kanban-project-select"
               style={{
                 appearance: 'none',
                 paddingRight: '2.5rem',
@@ -300,6 +310,8 @@ const Kanban: React.FC = () => {
 
           {/* Live Search Bar */}
           <motion.div
+            id="kanban-header-search-container"
+            className="kanban-search-wrap"
             animate={{ width: searchFocused ? 260 : 200 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
             style={{
@@ -314,6 +326,8 @@ const Kanban: React.FC = () => {
           >
             <Search size={15} color={searchFocused ? '#f59e0b' : 'var(--text-dim)'} style={{ flexShrink: 0, transition: 'color 0.2s' }} />
             <input
+              id="kanban-header-search-input"
+              className="kanban-search-field"
               type="text"
               placeholder="Search tickets…"
               value={searchQuery}
@@ -328,6 +342,8 @@ const Kanban: React.FC = () => {
             />
             {searchQuery && (
               <motion.button
+                id="kanban-header-search-clear"
+                className="kanban-search-clear-btn"
                 initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.6 }}
                 onClick={() => setSearchQuery('')}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-dim)', display: 'flex', padding: 0, flexShrink: 0 }}
@@ -362,7 +378,7 @@ const Kanban: React.FC = () => {
           className="kanban-board-container"
           style={{ 
             display: 'flex', 
-            gap: '1.25rem',
+            gap: '0.875rem',
             flex: 1,
             overflowX: 'auto',
             overflowY: 'hidden',
@@ -374,25 +390,34 @@ const Kanban: React.FC = () => {
           }}
         >
           {statuses.map((status) => (
-            <div key={status} style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              height: '100%',
-              minWidth: '320px', // Ensure consistent column width
-              maxWidth: '360px',
-              backgroundColor: 'rgba(255, 255, 255, 0.01)',
-              borderRadius: '20px',
-              padding: '1.25rem',
-              border: '1px solid var(--border)'
-            }}>
-              <div style={{ 
+            <div 
+              key={status} 
+              id={`kanban-column-${status.toLowerCase().replace(/\s+/g, '-')}`}
+              className="kanban-column-container"
+              style={{ 
                 display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'space-between', 
-                padding: '0 0.5rem',
-                marginBottom: '1.5rem',
-                flexShrink: 0
-              }}>
+                flexDirection: 'column', 
+                height: '100%',
+                minWidth: '260px', // Optimized width for perfect screen visibility
+                maxWidth: '290px',
+                backgroundColor: 'rgba(255, 255, 255, 0.01)',
+                borderRadius: '16px', // Sleeker premium corners
+                padding: '1rem', // Compact padding
+                border: '1px solid var(--border)'
+              }}
+            >
+              <div 
+                id={`kanban-column-header-${status.toLowerCase().replace(/\s+/g, '-')}`}
+                className="kanban-column-header-wrap"
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between', 
+                  padding: '0 0.25rem',
+                  marginBottom: '1rem',
+                  flexShrink: 0
+                }}
+              >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{
                     width: '36px',
@@ -407,8 +432,18 @@ const Kanban: React.FC = () => {
                     {getStatusIcon(status)}
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <h3 style={{ fontSize: '0.875rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: 'white' }}>{status}</h3>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 500, color: searchQuery.trim() && filteredTickets.filter(t => t.status === status).length === 0 ? '#ef4444' : 'var(--text-dim)' }}>
+                    <h3 
+                      id={`kanban-column-title-${status.toLowerCase().replace(/\s+/g, '-')}`}
+                      className="kanban-column-title-text"
+                      style={{ fontSize: '0.875rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: 'white' }}
+                    >
+                      {status}
+                    </h3>
+                    <span 
+                      id={`kanban-column-count-${status.toLowerCase().replace(/\s+/g, '-')}`}
+                      className="kanban-column-task-count"
+                      style={{ fontSize: '0.75rem', fontWeight: 500, color: searchQuery.trim() && filteredTickets.filter(t => t.status === status).length === 0 ? '#ef4444' : 'var(--text-dim)' }}
+                    >
                       {filteredTickets.filter(t => t.status === status).length} {searchQuery.trim() ? 'match' : 'Task'}{filteredTickets.filter(t => t.status === status).length !== 1 ? 's' : ''}
                     </span>
                   </div>

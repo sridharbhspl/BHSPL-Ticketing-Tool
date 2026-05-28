@@ -1,7 +1,27 @@
 from rest_framework import serializers
-from .models import Ticket, SubTask, Comment, Attachment, AuditLog, LeaveRequest, AttendanceSession
+from .models import Ticket, SubTask, Comment, Attachment, AuditLog, LeaveRequest, AttendanceSession, TicketType, Category, Subcategory, Environment
 from users.serializers import UserSerializer
 from projects.models import Project
+
+class TicketTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TicketType
+        fields = ['id', 'name']
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id', 'name']
+
+class SubcategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subcategory
+        fields = ['id', 'category', 'name']
+
+class EnvironmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Environment
+        fields = ['id', 'name']
 
 class CommentSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)
@@ -198,13 +218,14 @@ class AttendanceSessionSerializer(serializers.ModelSerializer):
     punchOutTime = serializers.CharField(source='punch_out_time', required=False, allow_null=True)
     totalWorkTime = serializers.CharField(source='total_work_time')
     totalBreakTime = serializers.CharField(source='total_break_time')
+    breakDetails = serializers.JSONField(source='break_details', required=False, default=list)
     createdAt = serializers.DateTimeField(source='created_at', read_only=True)
 
     class Meta:
         model = AttendanceSession
         fields = [
             'id', 'userId', 'userName', 'avatar', 'date', 'punchInTime', 'punchOutTime',
-            'totalWorkTime', 'totalBreakTime', 'status', 'createdAt'
+            'totalWorkTime', 'totalBreakTime', 'status', 'createdAt', 'breakDetails'
         ]
 
 

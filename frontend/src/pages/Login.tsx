@@ -187,28 +187,38 @@ const Login: React.FC = () => {
           zIndex: 1
         }}
       >
-        <div className="glass" style={{
-          padding: '40px',
-          borderRadius: 'var(--radius-xl)',
-          border: '1px solid var(--border)',
-          backgroundColor: 'rgba(15, 15, 18, 0.7)',
-        }}>
+        <div 
+          id="login-card-container"
+          className="glass login-card-wrap" 
+          style={{
+            padding: '40px',
+            borderRadius: 'var(--radius-xl)',
+            border: '1px solid var(--border)',
+            backgroundColor: 'rgba(15, 15, 18, 0.7)',
+          }}
+        >
           {/* Header */}
-          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <div style={{
-              width: '180px',
-              height: '65px',
-              margin: '0 auto 16px auto',
-              overflow: 'hidden',
-              borderRadius: '16px',
-              backgroundColor: '#000',
-              border: '1px solid rgba(255,255,255,0.05)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 10px 35px rgba(0,0,0,0.6), 0 0 20px rgba(245,158,11,0.2)'
-            }}>
+          <div id="login-header-group" className="login-header-section" style={{ textAlign: 'center', marginBottom: '32px' }}>
+            <div 
+              id="login-logo-container"
+              className="login-logo-wrap"
+              style={{
+                width: '180px',
+                height: '65px',
+                margin: '0 auto 16px auto',
+                overflow: 'hidden',
+                borderRadius: '16px',
+                backgroundColor: '#000',
+                border: '1px solid rgba(255,255,255,0.05)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 10px 35px rgba(0,0,0,0.6), 0 0 20px rgba(245,158,11,0.2)'
+              }}
+            >
               <motion.img 
+                id="login-logo-image"
+                className="login-logo-img"
                 src={logoImg} 
                 alt="BavyaTicketingTool" 
                 style={{ width: '100%', height: '100%', objectFit: 'contain', transform: 'scale(2.6)' }}
@@ -216,23 +226,24 @@ const Login: React.FC = () => {
                 transition={{ duration: 0.3 }}
               />
             </div>
-            <h1 className="gradient-text" style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '8px' }}>
+            <h1 id="login-header-title" className="gradient-text login-header-h1" style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '8px' }}>
               Welcome Back
             </h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
+            <p id="login-header-subtitle" className="login-header-desc" style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
               Sign in to manage your tickets and projects
             </p>
           </div>
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {/* Email Field */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 500, marginLeft: '4px' }}>
+            <div id="login-form-email-group" className="login-form-email-section" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label htmlFor="login-form-email-input" style={{ color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 500, marginLeft: '4px' }}>
                 Mail ID or Employee ID
               </label>
               <div style={{ position: 'relative' }}>
                 <Mail size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)' }} />
                 <input
+                  id="login-form-email-input"
                   type="text"
                   placeholder="Enter your Mail ID or Employee ID"
                   value={email}
@@ -248,29 +259,30 @@ const Login: React.FC = () => {
                     outline: 'none',
                     transition: 'all 0.2s'
                   }}
-                  className="search-input"
+                  className="search-input login-form-email-input-field"
                 />
               </div>
               {validationErrors.email && (
-                <span style={{ color: '#ef4444', fontSize: '0.75rem', marginLeft: '4px' }}>
+                <span id="login-form-email-error" className="login-form-field-error" style={{ color: '#ef4444', fontSize: '0.75rem', marginLeft: '4px' }}>
                   ⚠ {validationErrors.email}
                 </span>
               )}
             </div>
 
             {/* Password Field */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div id="login-form-password-group" className="login-form-password-section" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <label style={{ color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 500, marginLeft: '4px' }}>
+                <label htmlFor="login-form-password-input" style={{ color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 500, marginLeft: '4px' }}>
                   Password
                 </label>
-                <a href="#" style={{ color: 'var(--primary)', fontSize: '0.8rem', fontWeight: 500 }}>
+                <a id="login-form-forgot-link" className="login-form-forgot-password-link" href="#" style={{ color: 'var(--primary)', fontSize: '0.8rem', fontWeight: 500 }}>
                   Forgot password?
                 </a>
               </div>
               <div style={{ position: 'relative' }}>
                 <Lock size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)' }} />
                 <input
+                  id="login-form-password-input"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
@@ -286,9 +298,11 @@ const Login: React.FC = () => {
                     outline: 'none',
                     transition: 'all 0.2s'
                   }}
-                  className="search-input"
+                  className="search-input login-form-password-input-field"
                 />
                 <button
+                  id="login-form-password-toggle"
+                  className="login-form-pwd-toggle-btn"
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', padding: '2px', background: 'none', border: 'none', cursor: 'pointer' }}
@@ -297,7 +311,7 @@ const Login: React.FC = () => {
                 </button>
               </div>
               {validationErrors.password && (
-                <span style={{ color: '#ef4444', fontSize: '0.75rem', marginLeft: '4px' }}>
+                <span id="login-form-password-error" className="login-form-field-error" style={{ color: '#ef4444', fontSize: '0.75rem', marginLeft: '4px' }}>
                   ⚠ {validationErrors.password}
                 </span>
               )}
@@ -305,10 +319,14 @@ const Login: React.FC = () => {
 
             {/* Remember Me — fully interactive custom checkbox */}
             <label
+              id="login-form-remember-label"
+              className="login-form-remember-container"
               style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', width: 'fit-content', userSelect: 'none' }}
               onClick={() => setRememberMe(p => !p)}
             >
               <motion.div
+                id="login-form-remember-checkbox"
+                className="login-form-remember-check"
                 animate={{
                   backgroundColor: rememberMe ? 'var(--primary)' : 'rgba(255,255,255,0.03)',
                   borderColor: rememberMe ? 'var(--primary)' : 'var(--border)',
@@ -340,7 +358,7 @@ const Login: React.FC = () => {
                   </motion.svg>
                 )}
               </motion.div>
-              <span style={{ color: rememberMe ? 'var(--text-main)' : 'var(--text-muted)', fontSize: '0.85rem', transition: 'color 0.2s' }}>
+              <span id="login-form-remember-text" className="login-form-remember-span" style={{ color: rememberMe ? 'var(--text-main)' : 'var(--text-muted)', fontSize: '0.85rem', transition: 'color 0.2s' }}>
                 Remember for 30 days
               </span>
             </label>
@@ -348,6 +366,8 @@ const Login: React.FC = () => {
             {/* Error Message */}
             {error && (
               <motion.div 
+                id="login-error-alert"
+                className="login-alert-danger"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', color: '#ef4444', fontSize: '0.85rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(239, 68, 68, 0.3)' }}
@@ -360,6 +380,8 @@ const Login: React.FC = () => {
             {/* Success Message */}
             {success && (
               <motion.div 
+                id="login-success-alert"
+                className="login-alert-success"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', color: '#10b981', fontSize: '0.85rem', backgroundColor: 'rgba(16, 185, 129, 0.1)', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(16, 185, 129, 0.3)' }}
@@ -371,6 +393,8 @@ const Login: React.FC = () => {
 
             {/* Submit Button */}
             <motion.button
+              id="login-form-submit-btn"
+              className="login-form-submit-button"
               whileHover={{ scale: isLoading ? 1 : 1.02 }}
               whileTap={{ scale: isLoading ? 1 : 0.98 }}
               type="submit"
@@ -405,8 +429,8 @@ const Login: React.FC = () => {
 
 
           {/* Footer */}
-          <p style={{ textAlign: 'center', marginTop: '32px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            Don't have an account? <Link to="/register" style={{ color: 'var(--primary)', fontWeight: 600, textDecoration: 'none' }}>Register Now</Link>
+          <p id="login-register-prompt" className="login-register-prompt-footer" style={{ textAlign: 'center', marginTop: '32px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+            Don't have an account? <Link id="login-register-link" className="login-register-anchor" to="/register" style={{ color: 'var(--primary)', fontWeight: 600, textDecoration: 'none' }}>Register Now</Link>
           </p>
         </div>
       </motion.div>

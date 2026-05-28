@@ -5,7 +5,11 @@ from django.views.generic import RedirectView
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from tickets.views import TicketViewSet, SubTaskViewSet, CommentViewSet, AttachmentViewSet, AuditLogViewSet, LeaveRequestViewSet, AttendanceSessionViewSet
+from tickets.views import (
+    TicketViewSet, SubTaskViewSet, CommentViewSet, AttachmentViewSet, AuditLogViewSet,
+    LeaveRequestViewSet, AttendanceSessionViewSet, TicketTypeViewSet, CategoryViewSet, SubcategoryViewSet,
+    EnvironmentViewSet
+)
 from users.views import RegisterView, UserDetailView, MyTokenObtainPairView, UserViewSet, SeedTestUsersView, ChangePasswordView
 from projects.views import ProjectViewSet, ProjectMemberViewSet
 from teams.views import TeamViewSet, TeamMemberViewSet
@@ -25,6 +29,10 @@ router.register(r'team-members', TeamMemberViewSet)
 router.register(r'notifications', NotificationViewSet, basename='notification')
 router.register(r'leave-requests', LeaveRequestViewSet)
 router.register(r'attendance-sessions', AttendanceSessionViewSet)
+router.register(r'ticket-types', TicketTypeViewSet)
+router.register(r'categories', CategoryViewSet)
+router.register(r'subcategories', SubcategoryViewSet)
+router.register(r'environments', EnvironmentViewSet)
 
 urlpatterns = [
     path('', RedirectView.as_view(url='api/', permanent=False)),
